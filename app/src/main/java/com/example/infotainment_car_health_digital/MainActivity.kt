@@ -3,6 +3,7 @@ package com.example.infotainment_car_health_digital
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -38,10 +39,15 @@ import com.example.infotainment_car_health_digital.carHealth.CarHealthScreen
 import com.example.infotainment_car_health_digital.home.VehicleHealth
 import com.example.infotainment_car_health_digital.services.Services
 import com.example.infotainment_car_health_digital.ui.theme.InfotainmentCarHealthDigitalTheme
+import com.example.infotainment_car_health_digital.viewmodel.MainViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
 var selectedTab by mutableIntStateOf(0)
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    val viewModel: MainViewModel by viewModels<MainViewModel>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -66,7 +72,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                             1 -> {
-                                Services()
+                                Services(viewModel)
                             }
                             2 -> {
                                 CarHealthScreen()

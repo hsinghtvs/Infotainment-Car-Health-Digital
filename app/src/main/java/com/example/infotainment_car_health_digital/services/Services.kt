@@ -26,11 +26,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.infotainment_car_health_digital.viewmodel.MainViewModel
 
 var selectedService by mutableIntStateOf(1)
 
 @Composable
-fun Services() {
+fun Services(viewModel: MainViewModel) {
 
     val buttonBackGroundGradient = Brush.verticalGradient(
         listOf(
@@ -110,7 +111,7 @@ fun Services() {
                 }
             }
         } else {
-            PastServices()
+            PastServices(viewModel)
         }
     }
 }

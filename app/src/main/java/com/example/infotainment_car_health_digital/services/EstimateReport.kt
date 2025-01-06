@@ -44,13 +44,12 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
 import com.example.infotainment_car_health_digital.R
-import com.example.infotainment_car_health_digital.TabItem
-import com.example.infotainment_car_health_digital.Tabs
 import com.example.infotainment_car_health_digital.viewmodel.MainViewModel
 
 @SuppressLint("UnrememberedMutableState")
@@ -59,20 +58,6 @@ fun EstimateReport(
     modifier: Modifier,
     viewModel: MainViewModel
 ) {
-    val rowBackGroundGradient = Brush.verticalGradient(
-        listOf(
-            Color(0xFF111841).copy(alpha = 1f),
-            Color(0xFF050812).copy(alpha = 1f)
-        )
-    )
-
-    val transparentGradient = Brush.verticalGradient(
-        listOf(
-            Color.Transparent,
-            Color.Transparent
-        )
-    )
-
     var grandTotal by mutableDoubleStateOf(0.0)
     viewModel.estimateServiceHistoryDetail?.result?.estimationDetails?.labour?.let { labour ->
         for (i in labour.indices) {
@@ -93,66 +78,10 @@ fun EstimateReport(
         }
     }
 
-    val tabs = listOf(
-        TabItem(0, "Service Estimate"),
-        TabItem(1, "Inspection Report"),
-        TabItem(2, "Inspection Pictures")
-    )
-    var currentTabSelect by remember { mutableStateOf(0) }
     Column(
         modifier = modifier
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Tabs(
-                tabs = tabs,
-                onTabSelect = {
-                    currentTabSelect = it.id
-                    viewModel.selectedEstimateTab = it.id
-                },
-                selectedIndex = viewModel.selectedEstimateTab,
-                modifier = Modifier.weight(2f)
-            )
-            Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(10.dp)
-                    .background(
-                        brush = rowBackGroundGradient,
-                        shape = RoundedCornerShape(10.dp)
-                    )
-            ) {
-                Box(modifier = Modifier) {
-                    Text(
-                        modifier = Modifier
-                            .background(
-                                brush = transparentGradient,
-                                shape = RoundedCornerShape(30.dp)
-                            )
-                            .padding(10.dp),
-                        text = "Over All Rating",
-                        style = TextStyle(color = Color.White, fontSize = 14.sp)
-                    )
-                }
-                Spacer(modifier = Modifier.size(10.dp))
-                Box(modifier = Modifier) {
-                    viewModel.estimateServiceHistoryDetail?.result?.inspectionDetails?.overallRating?.let {
-                        Text(
-                            modifier = Modifier
-                                .background(
-                                    brush = transparentGradient,
-                                    shape = RoundedCornerShape(30.dp)
-                                )
-                                .padding(vertical = 10.dp),
-                            text = it,
-                            style = TextStyle(color = Color(0xFF059C05), fontSize = 14.sp)
-                        )
-                    }
-                }
-            }
-        }
-        Spacer(modifier = Modifier.size(18.dp))
+        Spacer(modifier = Modifier.size(10.dp))
         when (viewModel.selectedEstimateTab) {
             0 -> {
                 ServiceEstimate(
@@ -164,7 +93,12 @@ fun EstimateReport(
             1 -> InspectionReports(
                 viewModel
             )
-            2 -> viewModel.inventoryServiceHistoryDetail?.result?.inventoryPhotos?.let { VehicleInventoryPicture(images = it) }
+
+            2 -> viewModel.inventoryServiceHistoryDetail?.result?.inventoryPhotos?.let {
+                VehicleInventoryPicture(
+                    images = it
+                )
+            }
         }
     }
 }
@@ -271,7 +205,7 @@ fun InspectionReports(viewModel: MainViewModel) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             viewModel.estimateServiceHistoryDetail?.result?.inspectionDetails?.let {
-                if (it.checklistType == "Minor checklist"){
+                if (it.checklistType == "Minor checklist") {
                     LazyColumn() {
                         item {
                             Text(
@@ -279,8 +213,9 @@ fun InspectionReports(viewModel: MainViewModel) {
                                 text = "${it.checklistType} Summary",
                                 color = Color.White.copy(alpha = 0.96f),
                                 style = TextStyle(
-                                    fontSize = 12.sp,
-                                    fontFamily = FontFamily(Font(R.font.rubik)),
+                                    fontFamily = FontFamily(Font(R.font.manrope_bold)),
+                                    color = Color.White,
+                                    fontSize = 12.sp
                                 )
                             )
                         }
@@ -305,7 +240,7 @@ fun InspectionReports(viewModel: MainViewModel) {
                                 color = Color.White.copy(alpha = 0.96f),
                                 style = TextStyle(
                                     fontSize = 12.sp,
-                                    fontFamily = FontFamily(Font(R.font.rubik)),
+                                    fontFamily = FontFamily(Font(R.font.manrope_bold)),
                                 )
                             )
                         }
@@ -526,13 +461,13 @@ fun InspectionIndividuals(
                     modifier = Modifier.size(20.dp),
                     model = image,
                     contentDescription = "",
-                    colorFilter = ColorFilter.tint(Color(0xFFF36F21))
+                    colorFilter = ColorFilter.tint(Color(0xFF255AF5))
                 )
                 Spacer(modifier = Modifier.size(21.dp))
                 Text(
                     text = title,
                     style = TextStyle(
-                        fontFamily = FontFamily(Font(R.font.rubik)),
+                        fontFamily = FontFamily(Font(R.font.manrope_medium)),
                         fontWeight = FontWeight(600),
                         color = Color(0xFFFFFFFF),
                         fontSize = 12.sp
@@ -542,7 +477,7 @@ fun InspectionIndividuals(
                 Text(
                     text = performance,
                     style = TextStyle(
-                        fontFamily = FontFamily(Font(R.font.rubik)),
+                        fontFamily = FontFamily(Font(R.font.manrope_bold)),
                         fontWeight = FontWeight(600),
                         color = when (performance) {
                             "Good" -> Color(0xFF059C05)
@@ -615,7 +550,7 @@ fun PerformanceData(
                     maxLines = 1,
                     text = title,
                     style = TextStyle(
-                        fontFamily = FontFamily(Font(R.font.rubik)),
+                        fontFamily = FontFamily(Font(R.font.manrope_medium)),
                         fontWeight = FontWeight(100),
                         color = Color.White,
                         fontSize = 12.sp
@@ -627,7 +562,7 @@ fun PerformanceData(
                         maxLines = 1,
                         text = description,
                         style = TextStyle(
-                            fontFamily = FontFamily(Font(R.font.rubik)),
+                            fontFamily = FontFamily(Font(R.font.manrope_medium)),
                             fontWeight = FontWeight(400),
                             color = Color.Gray.copy(alpha = 0.65f),
                             fontSize = 12.sp
@@ -639,7 +574,7 @@ fun PerformanceData(
             Text(
                 text = performance,
                 style = TextStyle(
-                    fontFamily = FontFamily(Font(R.font.rubik)),
+                    fontFamily = FontFamily(Font(R.font.manrope_medium)),
                     fontWeight = FontWeight(600),
                     color = Color.Gray,
                     fontSize = 12.sp
@@ -666,12 +601,12 @@ fun ServiceEstimate(
     grandTotal: Double,
     viewModel: MainViewModel
 ) {
-    if(viewModel.gettingReports){
+    if (viewModel.gettingReports) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
-        ){
+        ) {
             CircularProgressIndicator()
         }
     } else {
@@ -724,7 +659,11 @@ fun ServiceEstimate(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(10.dp),
+                        .background(
+                            color = Color(0xFF6F8EFB).copy(alpha = 0.10f),
+                            shape = RoundedCornerShape(6.dp)
+                        )
+                        .padding(horizontal = 10.dp),
                     horizontalArrangement = Arrangement.End
                 ) {
                     Text(
@@ -732,7 +671,7 @@ fun ServiceEstimate(
                             .padding(horizontal = 16.dp, vertical = 7.dp),
                         text = "Grand Total",
                         style = TextStyle(
-                            fontFamily = FontFamily(Font(R.font.rubik)),
+                            fontFamily = FontFamily(Font(R.font.manrope_bold)),
                             fontWeight = FontWeight(500),
                             color = Color(0xFFFFFFFF),
                             fontSize = 12.sp
@@ -741,9 +680,9 @@ fun ServiceEstimate(
                     Text(
                         modifier = Modifier
                             .padding(horizontal = 16.dp, vertical = 7.dp),
-                        text = "₹3240.00",
+                        text = "₹$grandTotal",
                         style = TextStyle(
-                            fontFamily = FontFamily(Font(R.font.rubik)),
+                            fontFamily = FontFamily(Font(R.font.manrope_bold)),
                             fontWeight = FontWeight(500),
                             color = Color(0xFF89F38D),
                             fontSize = 12.sp
@@ -775,11 +714,13 @@ fun ServiceCard(
                 .width(180.dp),
             text = title,
             style = TextStyle(
-                fontFamily = FontFamily(Font(R.font.rubik)),
+                fontFamily = FontFamily(Font(R.font.manrope_medium)),
                 fontWeight = FontWeight(500),
                 color = Color(0xFFFFFFFF),
                 fontSize = 12.sp
-            )
+            ),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
         Text(
             modifier = Modifier
@@ -787,11 +728,13 @@ fun ServiceCard(
                 .padding(horizontal = 5.dp, vertical = 7.dp),
             text = qty,
             style = TextStyle(
-                fontFamily = FontFamily(Font(R.font.rubik)),
+                fontFamily = FontFamily(Font(R.font.manrope_medium)),
                 fontWeight = FontWeight(500),
                 color = Color(0xFFFFFFFF),
                 fontSize = 12.sp
-            )
+            ),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
         Text(
             modifier = Modifier
@@ -799,11 +742,13 @@ fun ServiceCard(
                 .padding(horizontal = 5.dp, vertical = 7.dp),
             text = rate,
             style = TextStyle(
-                fontFamily = FontFamily(Font(R.font.rubik)),
+                fontFamily = FontFamily(Font(R.font.manrope_bold)),
                 fontWeight = FontWeight(500),
                 color = Color(0xFFFFFFFF),
                 fontSize = 12.sp
-            )
+            ),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
         Text(
             modifier = Modifier
@@ -811,11 +756,13 @@ fun ServiceCard(
                 .padding(horizontal = 5.dp, vertical = 7.dp),
             text = totalAmount,
             style = TextStyle(
-                fontFamily = FontFamily(Font(R.font.rubik)),
+                fontFamily = FontFamily(Font(R.font.manrope_bold)),
                 fontWeight = FontWeight(500),
                 color = Color(0xFFFFFFFF),
                 fontSize = 12.sp
-            )
+            ),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }

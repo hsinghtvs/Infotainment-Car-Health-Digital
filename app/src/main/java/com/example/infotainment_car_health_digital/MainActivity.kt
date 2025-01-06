@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,21 +19,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.infotainment_car_health_digital.carHealth.CarHealthScreen
@@ -42,7 +41,6 @@ import com.example.infotainment_car_health_digital.ui.theme.InfotainmentCarHealt
 import com.example.infotainment_car_health_digital.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
-var selectedTab by mutableIntStateOf(0)
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -57,13 +55,19 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+                    val backGroundGradient = Brush.verticalGradient(
+                        listOf(
+                            Color(0xFF040A1B).copy(alpha = 1f),
+                            Color(0xFF040A1B).copy(alpha = 1f),
+                        )
+                    )
                     Box(
-                        modifier = Modifier.background(color = Color(0xFF0B1112))
+                        modifier = Modifier.background(brush = backGroundGradient)
                     ) {
-                        when (selectedTab) {
+                        when (viewModel.selectedTab) {
                             0 -> {
                                 Row(
-                                    modifier = Modifier.padding(bottom = 100.dp)
+                                    modifier = Modifier.padding(bottom = 80.dp)
                                 ) {
                                     CarHealth(modifier = Modifier.weight(2f))
                                     Spacer(modifier = Modifier.weight(0.1f))
@@ -78,7 +82,7 @@ class MainActivity : ComponentActivity() {
                                 CarHealthScreen()
                             }
                         }
-                        BottomTab(modifier = Modifier.align(Alignment.BottomCenter), selectedTab)
+                        BottomTab(modifier = Modifier.align(Alignment.BottomCenter), viewModel)
                     }
                 }
             }
@@ -90,8 +94,14 @@ class MainActivity : ComponentActivity() {
 private fun CarHealth(modifier: Modifier) {
     val backGroundGradient = Brush.verticalGradient(
         listOf(
-            Color(0xFF0B1112).copy(alpha = 1f),
-            Color(0xFF16345B).copy(alpha = 0.4f),
+            Color(0xFF032B9D).copy(alpha = 0f),
+            Color(0xFF040A1B).copy(alpha = 1f),
+        )
+    )
+    val borderGradient = Brush.verticalGradient(
+        listOf(
+            Color(0xFFDDE4FF).copy(alpha = 1f),
+            Color(0xFF040A1B).copy(alpha = 0.4f)
         )
     )
     Column(
@@ -100,22 +110,26 @@ private fun CarHealth(modifier: Modifier) {
             .background(brush = backGroundGradient, shape = RoundedCornerShape(10.dp))
             .fillMaxSize()
             .border(
-                1.dp,
-                color = Color.Gray.copy(alpha = 0.2f),
+                0.4.dp,
+                brush = borderGradient,
                 shape = RoundedCornerShape(10.dp)
             )
-            .padding(10.dp)
+            .padding(top =10.dp, start =10.dp, end = 10.dp)
     ) {
         Text(
             text = "CAR HEALTH",
-            style = TextStyle(color = Color.White, fontSize = 14.sp)
+            style = TextStyle(
+                fontFamily = FontFamily(Font(R.font.manrope_bold)),
+                color = Color.White,
+                fontSize = 14.sp
+            )
         )
         Spacer(modifier = Modifier.size(10.dp))
         VehicleHealth(
             batteryStatus = "GOOD",
             engineStatus = "GOOD",
             coolingStatus = "GOOD",
-            airIntakeStatus = "BAD"
+            airIntakeStatus = "GOOD"
         )
     }
 }
@@ -124,8 +138,15 @@ private fun CarHealth(modifier: Modifier) {
 private fun NextServiceDue(modifier: Modifier) {
     val backGroundGradient = Brush.verticalGradient(
         listOf(
-            Color(0xFF0B1112).copy(alpha = 1f),
-            Color(0xFF16345B).copy(alpha = 0.4f),
+            Color(0xFF032B9D).copy(alpha = 0f),
+            Color(0xFF040A1B).copy(alpha = 1f),
+        )
+    )
+
+    val borderGradient = Brush.verticalGradient(
+        listOf(
+            Color(0xFFDDE4FF).copy(alpha = 1f),
+            Color(0xFF040A1B).copy(alpha = 0.4f)
         )
     )
     Column(
@@ -135,14 +156,18 @@ private fun NextServiceDue(modifier: Modifier) {
             .fillMaxSize()
             .border(
                 1.dp,
-                color = Color.Gray.copy(alpha = 0.2f),
+                brush = borderGradient,
                 shape = RoundedCornerShape(10.dp)
             )
             .padding(10.dp)
     ) {
         Text(
             text = "NEXT SERVICE DUE",
-            style = TextStyle(color = Color.White, fontSize = 14.sp)
+            style = TextStyle(
+                fontFamily = FontFamily(Font(R.font.manrope_bold)),
+                color = Color.White,
+                fontSize = 14.sp
+            )
         )
         Spacer(modifier = Modifier.size(10.dp))
         LazyColumn() {
@@ -157,13 +182,19 @@ private fun NextServiceDue(modifier: Modifier) {
 
 @Composable
 private fun ServiceBox(name: String, date: String) {
+    val backGroundGradient = Brush.verticalGradient(
+        listOf(
+            Color(0xFF000000).copy(alpha = 0f),
+            Color(0xFF76ADFF).copy(alpha = 0.2f)
+        )
+    )
     Box(
         modifier = Modifier
-            .padding(horizontal = 10.dp, vertical = 5.dp)
+            .padding(horizontal = 5.dp, vertical = 5.dp)
             .clickable {
 
             }
-            .background(color = Color(0xFF1D3354), shape = RoundedCornerShape(size = 10.dp)),
+            .background(brush = backGroundGradient, shape = RoundedCornerShape(size = 10.dp)),
     ) {
         Row(
             modifier = Modifier
@@ -171,22 +202,30 @@ private fun ServiceBox(name: String, date: String) {
                 .fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Spacer(modifier = Modifier.size(15.dp))
+            Spacer(modifier = Modifier.size(10.dp))
             Text(
                 text = name,
-                style = Typography().labelSmall.copy(color = Color.White)
+                style = TextStyle(
+                    fontFamily = FontFamily(Font(R.font.manrope_bold)),
+                    color = Color.White
+                )
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = date,
-                style = Typography().labelSmall.copy(color = Color(0xFF3DED4F))
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = TextStyle(
+                    fontFamily = FontFamily(Font(R.font.manrope_bold)),
+                    color = Color(0xFF56AAFF)
+                )
             )
         }
     }
 }
 
 @Composable
-fun BottomTab(modifier: Modifier,selectedTabValue : Int) {
+fun BottomTab(modifier: Modifier,viewModel : MainViewModel) {
     Row(
         modifier = modifier
             .padding(horizontal = 30.dp)
@@ -203,9 +242,9 @@ fun BottomTab(modifier: Modifier,selectedTabValue : Int) {
             Modifier
                 .weight(1f)
                 .clickable {
-                    selectedTab = 0
+                    viewModel.selectedTab = 0
                 },
-            if (selectedTab == 0) {
+            if (viewModel.selectedTab == 0) {
                 R.drawable.home_active
             } else {
                 R.drawable.home_inactive
@@ -215,9 +254,9 @@ fun BottomTab(modifier: Modifier,selectedTabValue : Int) {
             Modifier
                 .weight(1f)
                 .clickable {
-                    selectedTab = 1
+                    viewModel.selectedTab = 1
                 },
-            if (selectedTab == 1) {
+            if (viewModel.selectedTab == 1) {
                 R.drawable.services_active
             } else {
                 R.drawable.services_inactive
@@ -227,9 +266,9 @@ fun BottomTab(modifier: Modifier,selectedTabValue : Int) {
             Modifier
                 .weight(1f)
                 .clickable {
-                    selectedTab = 2
+                    viewModel.selectedTab = 2
                 },
-            if (selectedTab == 2) {
+            if (viewModel.selectedTab == 2) {
                 R.drawable.car_health_active
             } else {
                 R.drawable.car_health_inactive
@@ -246,11 +285,10 @@ fun IndividualTab(modifier: Modifier, image: Int, name: String) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-        Icon(
+        Image(
             modifier = Modifier.size(40.dp),
             painter = painterResource(id = image),
             contentDescription = name,
-            tint = Color(0xFF255AF5)
         )
         Spacer(modifier = Modifier.size(10.dp))
         Text(text = name, style = TextStyle(color = Color.White))

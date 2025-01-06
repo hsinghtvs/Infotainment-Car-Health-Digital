@@ -25,6 +25,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.infotainment_car_health_digital.R
@@ -33,7 +36,7 @@ import com.example.infotainment_car_health_digital.home.VehicleHealth
 @Composable
 fun CarHealthScreen() {
     Row(
-        modifier = Modifier.padding(bottom = 100.dp)
+        modifier = Modifier.padding(bottom = 80.dp)
     ) {
         CarHealth(modifier = Modifier.weight(2f))
         Spacer(modifier = Modifier.weight(0.1f))
@@ -46,8 +49,14 @@ fun CarHealthScreen() {
 private fun CarHealth(modifier: Modifier) {
     val backGroundGradient = Brush.verticalGradient(
         listOf(
-            Color(0xFF0B1112).copy(alpha = 1f),
-            Color(0xFF16345B).copy(alpha = 0.4f),
+            Color(0xFF032B9D).copy(alpha = 0f),
+            Color(0xFF040A1B).copy(alpha = 1f),
+        )
+    )
+    val borderGradient = Brush.verticalGradient(
+        listOf(
+            Color(0xFFDDE4FF).copy(alpha = 1f),
+            Color(0xFF040A1B).copy(alpha = 0.4f)
         )
     )
     Column(
@@ -56,15 +65,19 @@ private fun CarHealth(modifier: Modifier) {
             .background(brush = backGroundGradient, shape = RoundedCornerShape(10.dp))
             .fillMaxSize()
             .border(
-                1.dp,
-                color = Color.Gray.copy(alpha = 0.2f),
+                0.4.dp,
+                brush = borderGradient,
                 shape = RoundedCornerShape(10.dp)
             )
-            .padding(10.dp)
+            .padding(top =10.dp, start =10.dp, end = 10.dp)
     ) {
         Text(
             text = "CAR HEALTH",
-            style = TextStyle(color = Color.White, fontSize = 14.sp)
+            style = TextStyle(
+                fontFamily = FontFamily(Font(R.font.manrope_bold)),
+                color = Color.White,
+                fontSize = 14.sp
+            )
         )
         Spacer(modifier = Modifier.size(10.dp))
         VehicleHealth(
@@ -80,8 +93,14 @@ private fun CarHealth(modifier: Modifier) {
 private fun NextServiceDue(modifier: Modifier) {
     val backGroundGradient = Brush.verticalGradient(
         listOf(
-            Color(0xFF0B1112).copy(alpha = 1f),
-            Color(0xFF16345B).copy(alpha = 0.4f),
+            Color(0xFF032B9D).copy(alpha = 0f),
+            Color(0xFF040A1B).copy(alpha = 1f),
+        )
+    )
+    val borderGradient = Brush.verticalGradient(
+        listOf(
+            Color(0xFFDDE4FF).copy(alpha = 1f),
+            Color(0xFF040A1B).copy(alpha = 0.4f)
         )
     )
     Column(
@@ -90,15 +109,19 @@ private fun NextServiceDue(modifier: Modifier) {
             .background(brush = backGroundGradient, shape = RoundedCornerShape(10.dp))
             .fillMaxSize()
             .border(
-                1.dp,
-                color = Color.Gray.copy(alpha = 0.2f),
+                0.4.dp,
+                brush = borderGradient,
                 shape = RoundedCornerShape(10.dp)
             )
             .padding(10.dp)
     ) {
         Text(
             text = "HEALTH STATUS",
-            style = TextStyle(color = Color.White, fontSize = 14.sp)
+            style = TextStyle(
+                fontFamily = FontFamily(Font(R.font.manrope_bold)),
+                color = Color.White,
+                fontSize = 14.sp
+            )
         )
         Spacer(modifier = Modifier.size(10.dp))
         LazyColumn() {
@@ -126,17 +149,10 @@ private fun ServiceBox(critical: String, name: String, bookRsa: Boolean) {
         )
     )
 
-    val rowBackGroundGradient = Brush.verticalGradient(
+    val backGroundGradient = Brush.verticalGradient(
         listOf(
-            Color(0xFF111841).copy(alpha = 1f),
-            Color(0xFF050812).copy(alpha = 1f)
-        )
-    )
-
-    val transparentGradient = Brush.verticalGradient(
-        listOf(
-            Color.Transparent,
-            Color.Transparent
+            Color(0xFF000000).copy(alpha = 0f),
+            Color(0xFF76ADFF).copy(alpha = 0.2f)
         )
     )
 
@@ -146,7 +162,7 @@ private fun ServiceBox(critical: String, name: String, bookRsa: Boolean) {
             .clickable {
 
             }
-            .background(color = Color(0xFF1D3354), shape = RoundedCornerShape(size = 10.dp)),
+            .background(brush = backGroundGradient, shape = RoundedCornerShape(size = 10.dp)),
     ) {
         Row(
             modifier = Modifier
@@ -187,6 +203,8 @@ private fun ServiceBox(critical: String, name: String, bookRsa: Boolean) {
                             )
                             .padding(horizontal = 10.dp, vertical = 5.dp),
                         text = "BOOK RSA",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                         style = TextStyle(color = Color.White, fontSize = 10.sp)
                     )
                 }

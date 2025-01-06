@@ -10,10 +10,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
@@ -27,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
@@ -34,6 +36,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.infotainment_car_health_digital.R
@@ -46,7 +49,7 @@ var remarkType by mutableStateOf("")
 @Composable
 fun PastServices(viewModel: MainViewModel) {
     Row(
-        modifier = Modifier.padding(bottom = 85.dp)
+        modifier = Modifier
     ) {
         BookingInformation(Modifier.weight(1f), viewModel)
         Spacer(modifier = Modifier.size(10.dp))
@@ -65,12 +68,8 @@ fun ServiceDetail(modifier: Modifier, viewModel: MainViewModel) {
     Column(
         modifier = modifier
     ) {
-        Text(
-            text = "Service Details",
-            style = TextStyle(color = Color.White, fontSize = 14.sp)
-        )
         Spacer(modifier = Modifier.size(10.dp))
-        if(viewModel.gettingReports == true){
+        if (viewModel.gettingReports == true) {
             CircularProgressIndicator()
         } else {
             Row {
@@ -91,9 +90,9 @@ fun ServiceDetail(modifier: Modifier, viewModel: MainViewModel) {
                                 Spacer(modifier = Modifier.size(5.dp))
                                 Divider(
                                     modifier = Modifier
-                                        .width(230.dp)
+                                        .fillMaxWidth()
                                         .background(color = Color.White.copy(alpha = 0.20f)),
-                                    thickness = 2.dp,
+                                    thickness = 1.dp,
                                     color = Color.White.copy(alpha = 0.20f)
                                 )
                             }
@@ -120,9 +119,9 @@ fun ServiceDetail(modifier: Modifier, viewModel: MainViewModel) {
                                 Spacer(modifier = Modifier.size(5.dp))
                                 Divider(
                                     modifier = Modifier
-                                        .width(230.dp)
+                                        .fillMaxWidth()
                                         .background(color = Color.White.copy(alpha = 0.20f)),
-                                    thickness = 2.dp,
+                                    thickness = 1.dp,
                                     color = Color.White.copy(alpha = 0.20f)
                                 )
                             }
@@ -151,9 +150,9 @@ fun ServiceDetail(modifier: Modifier, viewModel: MainViewModel) {
                                 Spacer(modifier = Modifier.size(5.dp))
                                 Divider(
                                     modifier = Modifier
-                                        .width(230.dp)
+                                        .fillMaxWidth()
                                         .background(color = Color.White.copy(alpha = 0.20f)),
-                                    thickness = 2.dp,
+                                    thickness = 1.dp,
                                     color = Color.White.copy(alpha = 0.20f)
                                 )
                             }
@@ -181,9 +180,9 @@ fun ServiceDetail(modifier: Modifier, viewModel: MainViewModel) {
                                 Spacer(modifier = Modifier.size(5.dp))
                                 Divider(
                                     modifier = Modifier
-                                        .width(230.dp)
+                                        .fillMaxWidth()
                                         .background(color = Color.White.copy(alpha = 0.20f)),
-                                    thickness = 2.dp,
+                                    thickness = 1.dp,
                                     color = Color.White.copy(alpha = 0.20f)
                                 )
                             }
@@ -201,9 +200,9 @@ fun ServiceDetail(modifier: Modifier, viewModel: MainViewModel) {
                                 Spacer(modifier = Modifier.size(5.dp))
                                 Divider(
                                     modifier = Modifier
-                                        .width(230.dp)
+                                        .fillMaxWidth()
                                         .background(color = Color.White.copy(alpha = 0.20f)),
-                                    thickness = 2.dp,
+                                    thickness = 1.dp,
                                     color = Color.White.copy(alpha = 0.20f)
                                 )
                             }
@@ -221,9 +220,9 @@ fun ServiceDetail(modifier: Modifier, viewModel: MainViewModel) {
                                 Spacer(modifier = Modifier.size(5.dp))
                                 Divider(
                                     modifier = Modifier
-                                        .width(230.dp)
+                                        .fillMaxWidth()
                                         .background(color = Color.White.copy(alpha = 0.20f)),
-                                    thickness = 2.dp,
+                                    thickness = 1.dp,
                                     color = Color.White.copy(alpha = 0.20f)
                                 )
                             }
@@ -258,36 +257,56 @@ fun ServiceDetailsList(
     reportKey: Boolean,
     detailMessage: String
 ) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
-    ) {
-        Image(
-            modifier = Modifier.size(12.dp),
-            painter = painterResource(id = image),
-            contentDescription = ""
+
+    val backGroundGradient = Brush.verticalGradient(
+        listOf(
+            Color(0xFFFFFFFF).copy(alpha = 0f),
+            Color(0xFFFFFFFF).copy(alpha = 0.2f)
         )
+    )
+    Row(
+        modifier = modifier.padding(vertical = 5.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .background(brush = backGroundGradient, shape = CircleShape)
+                .border(1.dp, color = Color(0xFF007AEC).copy(alpha = 0.5f), shape = CircleShape)
+                .padding(8.dp)
+        ) {
+            Image(
+                modifier = Modifier.size(12.dp),
+                painter = painterResource(id = image),
+                contentDescription = ""
+            )
+        }
         Spacer(modifier = Modifier.size(5.dp))
         Column(
 
         ) {
             Text(
                 text = description,
-                fontFamily = FontFamily(Font(R.font.rubik)),
+                fontFamily = FontFamily(Font(R.font.manrope_medium)),
                 fontWeight = FontWeight(500),
                 color = Color(0xFFFFFFFF),
-                fontSize = 12.sp
+                fontSize = 12.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = TextStyle(
+                    fontFamily = FontFamily(Font(R.font.manrope_medium)),
+                    color = Color.White,
+                    fontSize = 14.sp
+                )
             )
             Row(
+                modifier = Modifier,
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.Start
             ) {
                 if (completed) {
                     Image(
                         modifier = Modifier
-                            .padding(start = 15.dp)
-                            .size(16.dp),
+                            .size(10.dp),
                         painter = painterResource(id = R.drawable.check),
                         contentDescription = ""
                     )
@@ -305,10 +324,11 @@ fun ServiceDetailsList(
                 Text(
                     modifier = Modifier,
                     text = if (completed) date else "Not yet Started",
+                    maxLines = 1,
                     style = TextStyle(
                         fontSize = 12.sp,
                         lineHeight = 18.sp,
-                        fontFamily = FontFamily(Font(R.font.rubik)),
+                        fontFamily = FontFamily(Font(R.font.manrope_medium)),
                         fontWeight = FontWeight(400),
                         color = if (completed) Color(0xFFFFFFFF) else Color(0xFF808080),
                     )
@@ -329,6 +349,7 @@ fun ServiceDetailsList(
 
 @Composable
 fun BookingInformation(modifier: Modifier, viewModel: MainViewModel) {
+
     LazyColumn(
         modifier = modifier
     ) {
@@ -383,6 +404,13 @@ fun BookingInfoBox(
     index: Int,
     viewModel: MainViewModel
 ) {
+    val backGroundGradient = Brush.verticalGradient(
+        listOf(
+            Color(0xFF000000).copy(alpha = 0.2f),
+            Color(0xFF76ADFF).copy(alpha = 0.2f)
+        )
+    )
+
     Box(
         modifier = modifier
             .padding(horizontal = 10.dp, vertical = 5.dp)
@@ -405,7 +433,7 @@ fun BookingInfoBox(
                 }
                 selectedPastService = index
             }
-            .background(color = Color(0xFF1D3354), shape = RoundedCornerShape(size = 10.dp))
+            .background(brush = backGroundGradient, shape = RoundedCornerShape(size = 10.dp))
             .border(
                 width = 1.dp,
                 color = if (selectedPastService == index) {

@@ -3,6 +3,7 @@ package com.example.infotainment_car_health_digital.viewmodel
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -37,6 +38,7 @@ class MainViewModel @Inject constructor(
     var errorResponse by mutableStateOf(0)
     var selectedEstimateTab by mutableStateOf(0)
     var gettingReports by mutableStateOf(false)
+    var selectedTab by mutableIntStateOf(0)
 
     init {
         getServiceHistoryResponse(serviceHistoryBookings[0])

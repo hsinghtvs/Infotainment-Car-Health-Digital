@@ -2,6 +2,7 @@ package com.example.infotainment_car_health_digital
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -48,12 +49,23 @@ fun Tabs(
         )
     )
 
-    val rowBackGroundGradient = Brush.verticalGradient(
+    val itemsBorderGradient = Brush.verticalGradient(
         listOf(
-            Color(0xFF111841).copy(alpha = 1f),
-            Color(0xFF050812).copy(alpha = 1f)
+            Color(0xFFFFFFFF).copy(alpha = 0f),
+            Color(0xFFFFFFFF).copy(alpha = 0.1f),
+            Color(0xFF032B9D).copy(alpha = 0.4f)
         )
     )
+
+    val rowBackGroundGradient = Brush.verticalGradient(
+        listOf(
+            Color(0xFF2EA7FF).copy(alpha = 0f),
+            Color(0xFF2EA7FF).copy(alpha = 0f),
+            Color(0xFF2EA7FF).copy(alpha = 0f),
+            Color(0xFF2EA7FF).copy(alpha = 0.1f)
+        )
+    )
+
 
     val transparentGradient = Brush.verticalGradient(
         listOf(
@@ -77,8 +89,9 @@ fun Tabs(
                 modifier = Modifier
                     .background(
                         brush = rowBackGroundGradient,
-                        shape = RoundedCornerShape(10.dp)
-                    ),
+                        shape = RoundedCornerShape(30.dp)
+                    )
+                    .border(1.dp, brush = itemsBorderGradient, shape = RoundedCornerShape(30.dp)),
                 verticalAlignment = Alignment.CenterVertically
             ){
                 tabs.forEachIndexed { index, tabItem ->
@@ -110,71 +123,6 @@ fun Tabs(
                         maxLines = 1,
                         style = TextStyle(color = Color.White, fontSize = 14.sp)
                     )
-
-//                    Box(
-//                        modifier = Modifier
-//                            .background(
-//                                brush = if (selectedIndex == index) {
-//                                    buttonBackGroundGradient
-//                                } else {
-//                                    rowBackGroundGradient
-//                                },
-//                                shape = RoundedCornerShape(
-//                                    topStart = 4.dp,
-//                                    topEnd = 4.dp,
-//                                    bottomEnd = 0.dp,
-//                                    bottomStart = 0.dp
-//                                )
-//
-//                            )
-//                            .border(
-//                                width = 1.dp,
-//                                color = if (selectedIndex == index) {
-//                                    Color(0xFF1786B6)
-//                                } else {
-//                                    Color(0xFF3C4042)
-//                                },
-//                                shape = RoundedCornerShape(
-//                                    topStart = 4.dp,
-//                                    topEnd = 4.dp,
-//                                    bottomEnd = 0.dp,
-//                                    bottomStart = 0.dp
-//                                )
-//                            )
-//                            .padding(
-//                                horizontal = 15.dp,
-//                                vertical = 10.dp
-//                            ),
-//                        contentAlignment = Alignment.Center
-//                    ) {
-//                        Text(
-//                            modifier = Modifier
-//                                .onGloballyPositioned { coordinates ->
-//                                    if (tabIndicatorPositions.size < tabs.size) {
-//                                        val position =
-//                                            with(density) { coordinates.boundsInRoot().bottomCenter.x.toDp() } -
-//                                                    HALF_INDICATOR_WIDTH
-//                                        if (position >= DEFAULT_INDICATOR_POSITION) {
-//                                            tabIndicatorPositions.add(position)
-//                                        }
-//                                    }
-//                                }
-//                                .clickable(
-//                                    indication = null,
-//                                    interactionSource = MutableInteractionSource()
-//                                ) {
-//                                    onTabSelect(tabItem)
-//                                },
-//                            text = tabItem.title,
-//                            color = Color(0xFFF1F1F1),
-//                            style = TextStyle(
-//                                fontSize = 14.sp,
-//                                lineHeight = 20.sp,
-//                                fontWeight = FontWeight(500),
-//                                color = Color(0xFFF3EBE6),
-//                            )
-//                        )
-//                    }
                 }
             }
         }

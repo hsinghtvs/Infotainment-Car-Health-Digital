@@ -1,11 +1,13 @@
 package com.example.infotainment_car_health_digital.api
 
+import com.example.infotainment_car_health_digital.model.refreshToken.RefreshTokenDTO
 import com.mytvs.mytvs4wvehicleapp.data.model.serviceHistoryResponse.estimates.EstimateResponseDTO
 import com.mytvs.mytvs4wvehicleapp.data.model.serviceHistoryResponse.inventory.InventoryDTO
 import com.mytvs.mytvs4wvehicleapp.data.model.serviceHistoryResponse.serviceHistory.ServiceHistoryResponseDTO
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -33,4 +35,11 @@ interface VehicleDetailApiResponse {
         @Path("order_id") order_id: String,
         @Query("type") type: String
     ): Response<EstimateResponseDTO>
+
+    @POST("refreshtoken")
+    suspend fun getRefreshToken(
+        @Header("client_code") client_code: String,
+        @Header("refresh_token") refresh_token: String
+    ): Response<RefreshTokenDTO>
+
 }

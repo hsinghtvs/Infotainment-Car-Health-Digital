@@ -1,7 +1,6 @@
 package com.example.infotainment_car_health_digital.services
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -12,29 +11,34 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -42,15 +46,18 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
 import com.example.infotainment_car_health_digital.R
 import com.example.infotainment_car_health_digital.TabItem
 import com.example.infotainment_car_health_digital.Tabs
+import com.example.infotainment_car_health_digital.viewmodel.MainViewModel
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun EstimateReport(
-    modifier: Modifier
+    modifier: Modifier,
+    viewModel: MainViewModel
 ) {
     val rowBackGroundGradient = Brush.verticalGradient(
         listOf(
@@ -67,6 +74,25 @@ fun EstimateReport(
     )
 
     var grandTotal by mutableDoubleStateOf(0.0)
+    viewModel.estimateServiceHistoryDetail?.result?.estimationDetails?.labour?.let { labour ->
+        for (i in labour.indices) {
+            if (labour[i].approvalStatus == "2" ||
+                labour[i].approvalStatus == "1"
+            ) {
+                grandTotal += labour[i].totalPrice
+            }
+        }
+    }
+    viewModel.estimateServiceHistoryDetail?.result?.estimationDetails?.parts?.let { parts ->
+        for (i in parts.indices) {
+            if (parts[i].approvalStatus == "2" ||
+                parts[i].approvalStatus == "1"
+            ) {
+                grandTotal += parts[i].totalPrice
+            }
+        }
+    }
+
     val tabs = listOf(
         TabItem(0, "Service Estimate"),
         TabItem(1, "Inspection Report"),
@@ -83,8 +109,9 @@ fun EstimateReport(
                 tabs = tabs,
                 onTabSelect = {
                     currentTabSelect = it.id
+                    viewModel.selectedEstimateTab = it.id
                 },
-                selectedIndex = currentTabSelect,
+                selectedIndex = viewModel.selectedEstimateTab,
                 modifier = Modifier.weight(2f)
             )
             Row(
@@ -110,35 +137,131 @@ fun EstimateReport(
                 }
                 Spacer(modifier = Modifier.size(10.dp))
                 Box(modifier = Modifier) {
-                    Text(
-                        modifier = Modifier
-                            .background(
-                                brush = transparentGradient,
-                                shape = RoundedCornerShape(30.dp)
-                            )
-                            .padding(vertical = 10.dp),
-                        text = "Good",
-                        style = TextStyle(color = Color(0xFF059C05), fontSize = 14.sp)
-                    )
+                    viewModel.estimateServiceHistoryDetail?.result?.inspectionDetails?.overallRating?.let {
+                        Text(
+                            modifier = Modifier
+                                .background(
+                                    brush = transparentGradient,
+                                    shape = RoundedCornerShape(30.dp)
+                                )
+                                .padding(vertical = 10.dp),
+                            text = it,
+                            style = TextStyle(color = Color(0xFF059C05), fontSize = 14.sp)
+                        )
+                    }
                 }
             }
         }
         Spacer(modifier = Modifier.size(18.dp))
-        when (currentTabSelect) {
-            0 -> ServiceEstimate(
-                grandTotal = grandTotal
-            )
+        when (viewModel.selectedEstimateTab) {
+            0 -> {
+                ServiceEstimate(
+                    grandTotal = grandTotal,
+                    viewModel
+                )
+            }
 
             1 -> InspectionReports(
-
+                viewModel
             )
+            2 -> viewModel.inventoryServiceHistoryDetail?.result?.inventoryPhotos?.let { VehicleInventoryPicture(images = it) }
         }
     }
 }
 
 @Composable
-fun InspectionReports(
+fun VehicleInventoryPicture(
+    images: List<String>
 ) {
+    var showDialogue by remember { mutableStateOf(false) }
+    var showDialogueIndex by remember { mutableIntStateOf(0) }
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(3)
+    ) {
+        itemsIndexed(images) { index, item ->
+            AsyncImage(
+                modifier = Modifier
+                    .clickable {
+                        showDialogue = true
+                        showDialogueIndex = index
+                    }
+                    .padding(10.dp)
+                    .height(height = 130.dp),
+                model = item,
+                contentDescription = ""
+            )
+        }
+    }
+    if (showDialogue) {
+        Dialog(
+            onDismissRequest = {
+                showDialogue = false
+            }) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Image(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .size(24.dp)
+                            .clickable { showDialogue = false },
+                        painter = painterResource(id = R.drawable.close),
+                        contentDescription = "",
+                        colorFilter = ColorFilter.tint(Color.White)
+                    )
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        modifier = Modifier.clickable {
+                            if (showDialogueIndex > 0) {
+                                showDialogueIndex--
+                            }
+                        },
+                        painter = painterResource(id = R.drawable.left_arrow),
+                        contentDescription = "",
+                        colorFilter = if (showDialogueIndex > 0) {
+                            ColorFilter.tint(color = Color.White)
+                        } else {
+                            ColorFilter.tint(color = Color.White.copy(alpha = 0.25f))
+                        }
+                    )
+                    Spacer(modifier = Modifier.size(20.dp))
+                    AsyncImage(
+                        modifier = Modifier.size(width = 400.dp, height = 400.dp),
+                        model = images[showDialogueIndex],
+                        contentDescription = ""
+                    )
+                    Spacer(modifier = Modifier.size(20.dp))
+                    Image(
+                        modifier = Modifier.clickable {
+                            if (showDialogueIndex < (images.size - 1)) {
+                                showDialogueIndex++
+                            }
+                        },
+                        painter = painterResource(id = R.drawable.right_arrow),
+                        contentDescription = "",
+                        colorFilter = if (showDialogueIndex < (images.size - 1)) {
+                            ColorFilter.tint(color = Color.White)
+                        } else {
+                            ColorFilter.tint(color = Color.White.copy(alpha = 0.25f))
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun InspectionReports(viewModel: MainViewModel) {
     var selected by remember { mutableStateOf("Engine") }
     Column(
 
@@ -147,209 +270,205 @@ fun InspectionReports(
         Row(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-            ) {
-                item {
-                    Text(
-                        modifier = Modifier.padding(start = 10.dp),
-                        text = "Major CheckList Summary",
-                        color = Color.White.copy(alpha = 0.96f),
-                        style = TextStyle(
-                            fontSize = 12.sp,
-                            fontFamily = FontFamily(Font(R.font.rubik)),
-                        )
-                    )
-                }
-                item {
-                    InspectionIndividuals(
-                        title = "Engine",
-                        image = "https://spn-sta.spinny.com/blog/20220228143219/ezgif.com-gif-maker-2021-11-24T204220.732.jpg?compress=true&quality=80&w=800&dpr=2.6",
-                        performance = "Good",
-//                        parameter = result.inspectionDetails.engine.parameters,
-                        selected = selected == "Engine",
-                        modifier = Modifier
-                    )
-                }
-                item {
-                    InspectionIndividuals(
-                        image = "https://spn-sta.spinny.com/blog/20220228143219/ezgif.com-gif-maker-2021-11-24T204220.732.jpg?compress=true&quality=80&w=800&dpr=2.6",
-                        title = "Battery",
-                        performance = "Average",
-                        selected = selected == "Battery",
-                        modifier = Modifier
-//                        parameter = result.inspectionDetails.battery.parameters
-                    )
-                }
-                item {
-                    InspectionIndividuals(
-                        image = "https://spn-sta.spinny.com/blog/20220228143219/ezgif.com-gif-maker-2021-11-24T204220.732.jpg?compress=true&quality=80&w=800&dpr=2.6",
-                        title = "Suspension",
-                        performance = "Good",
-                        selected = selected == "Suspension",
-                        modifier = Modifier
-//                        parameter = result.inspectionDetails.suspension.parameters
-                    )
-                }
-                item {
-                    InspectionIndividuals(
-                        image = "https://spn-sta.spinny.com/blog/20220228143219/ezgif.com-gif-maker-2021-11-24T204220.732.jpg?compress=true&quality=80&w=800&dpr=2.6",
-                        title = "Tyre",
-                        performance = "Bad",
-                        selected = selected == "Tires",
-                        modifier = Modifier
-//                        parameter = result.inspectionDetails.tire.parameters
-                    )
-                }
-                item {
-                    InspectionIndividuals(
-                        image = "https://spn-sta.spinny.com/blog/20220228143219/ezgif.com-gif-maker-2021-11-24T204220.732.jpg?compress=true&quality=80&w=800&dpr=2.6",
-                        title = "Electrical",
-                        performance = "Good",
-                        selected = selected == "Electrical",
-                        modifier = Modifier
-//                        parameter = result.inspectionDetails.electrical.parameters
-                    )
-                }
-                item {
-                    InspectionIndividuals(
-                        image = "https://spn-sta.spinny.com/blog/20220228143219/ezgif.com-gif-maker-2021-11-24T204220.732.jpg?compress=true&quality=80&w=800&dpr=2.6",
-                        title = "Transmission",
-                        performance = "Good",
-                        selected = selected == "Transmission",
-                        modifier = Modifier
-//                        parameter = result.inspectionDetails.trans.parameters
-                    )
-                }
-                item {
-                    InspectionIndividuals(
-                        image = "https://spn-sta.spinny.com/blog/20220228143219/ezgif.com-gif-maker-2021-11-24T204220.732.jpg?compress=true&quality=80&w=800&dpr=2.6",
-                        title = "Interior",
-                        performance = "Good",
-                        selected = selected == "Interior",
-                        modifier = Modifier
-//                        parameter = result.inspectionDetails.interior.parameters
-                    )
-                }
-                item {
-                    InspectionIndividuals(
-                        image = "https://spn-sta.spinny.com/blog/20220228143219/ezgif.com-gif-maker-2021-11-24T204220.732.jpg?compress=true&quality=80&w=800&dpr=2.6",
-                        title = "Exterior",
-                        performance = "Good",
-                        selected = selected == "Exterior",
-                        modifier = Modifier
-//                        parameter = result.inspectionDetails.exterior.parameters
-                    )
-                }
-                item {
-                    InspectionIndividuals(
-                        image = "https://spn-sta.spinny.com/blog/20220228143219/ezgif.com-gif-maker-2021-11-24T204220.732.jpg?compress=true&quality=80&w=800&dpr=2.6",
-                        title = "Brakes",
-                        performance = "Good",
-                        selected = selected == "Brakes",
-                        modifier = Modifier
-//                        parameter = result.inspectionDetails.brakes.parameters
-                    )
-                }
-                item {
-                    InspectionIndividuals(
-                        image = "https://spn-sta.spinny.com/blog/20220228143219/ezgif.com-gif-maker-2021-11-24T204220.732.jpg?compress=true&quality=80&w=800&dpr=2.6",
-                        title = "Steering",
-                        performance = "Good",
-                        selected = selected == "Steering",
-                        modifier = Modifier
-//                        parameter = result.inspectionDetails.steering.parameters
-                    )
-                }
-            }
-
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-            ) {
-                item {
-                    Text(
-                        modifier = Modifier.padding(horizontal = 10.dp),
-                        text = "Engine Status",
-                        color = Color.White,
-                        style = TextStyle(
-                            fontSize = 10.sp
-                        )
-                    )
-                }
-//                parameter?.let { parameter ->
-                items(8) {
-                    when (it) {
-                        1 -> {
-                            PerformanceData(
-                                title = "Radiator",
-                                performance = "Good",
-//                            description = if (item.ratingReasonDesc != "" && item.ratingReasonDesc != null) item.ratingReasonDesc else item.ratingReasonRemarks
-                                description = "Good"
+            viewModel.estimateServiceHistoryDetail?.result?.inspectionDetails?.let {
+                if (it.checklistType == "Minor checklist"){
+                    LazyColumn() {
+                        item {
+                            Text(
+                                modifier = Modifier.padding(start = 10.dp),
+                                text = "${it.checklistType} Summary",
+                                color = Color.White.copy(alpha = 0.96f),
+                                style = TextStyle(
+                                    fontSize = 12.sp,
+                                    fontFamily = FontFamily(Font(R.font.rubik)),
+                                )
                             )
                         }
-
-                        2 -> {
-                            PerformanceData(
-                                title = "Hose Pipe",
-                                performance = "Good",
-//                            description = if (item.ratingReasonDesc != "" && item.ratingReasonDesc != null) item.ratingReasonDesc else item.ratingReasonRemarks
-                                description = "Good"
+                        items(it.parameters) {
+                            InspectionIndividuals(
+                                image = it.imageURL,
+                                title = it.parameterName,
+                                performance = it.parameterRating,
+                                modifier = Modifier.fillMaxWidth(),
                             )
                         }
-
-                        3 -> {
-                            PerformanceData(
-                                title = "Spark Plug",
-                                performance = "Good",
-//                            description = if (item.ratingReasonDesc != "" && item.ratingReasonDesc != null) item.ratingReasonDesc else item.ratingReasonRemarks
-                                description = "Good"
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .weight(1f)
+                    ) {
+                        item {
+                            Text(
+                                modifier = Modifier.padding(start = 10.dp),
+                                text = it.checklistType,
+                                color = Color.White.copy(alpha = 0.96f),
+                                style = TextStyle(
+                                    fontSize = 12.sp,
+                                    fontFamily = FontFamily(Font(R.font.rubik)),
+                                )
                             )
                         }
-
-                        4 -> {
-                            PerformanceData(
-                                title = "Ignition Coil/Ignitor",
-                                performance = "Good",
-//                            description = if (item.ratingReasonDesc != "" && item.ratingReasonDesc != null) item.ratingReasonDesc else item.ratingReasonRemarks
-                                description = "Good"
+                        item {
+                            InspectionIndividuals(
+                                title = "Engine",
+                                image = it.engine.imageURL,
+                                performance = it.engine.subsystemRating,
+                                selected = selected == "Engine",
+                                modifier = Modifier.clickable {
+                                    selected = "Engine"
+                                    viewModel.selectedParameter =
+                                        it.engine.parameters.toMutableList()
+                                }
                             )
                         }
-
-                        5 -> {
-                            PerformanceData(
-                                title = "High Tension Cable",
-                                performance = "Good",
-//                            description = if (item.ratingReasonDesc != "" && item.ratingReasonDesc != null) item.ratingReasonDesc else item.ratingReasonRemarks
-                                description = "Good"
+                        item {
+                            InspectionIndividuals(
+                                image = it.battery.imageURL,
+                                title = "Battery",
+                                performance = it.battery.subsystemRating,
+                                selected = selected == "Battery",
+                                modifier = Modifier.clickable {
+                                    selected = "Battery"
+                                    viewModel.selectedParameter =
+                                        it.battery.parameters.toMutableList()
+                                }
                             )
                         }
-
-                        6 -> {
-                            PerformanceData(
-                                title = "Brake Oil",
-                                performance = "Good",
-//                            description = if (item.ratingReasonDesc != "" && item.ratingReasonDesc != null) item.ratingReasonDesc else item.ratingReasonRemarks
-                                description = "Good"
+                        item {
+                            InspectionIndividuals(
+                                image = it.suspension.imageURL,
+                                title = "Suspension",
+                                performance = it.suspension.subsystemRating,
+                                selected = selected == "Suspension",
+                                modifier = Modifier.clickable {
+                                    selected = "Suspension"
+                                    viewModel.selectedParameter =
+                                        it.suspension.parameters.toMutableList()
+                                }
                             )
                         }
-
-                        7 -> {
-                            PerformanceData(
-                                title = "Coolant",
-                                performance = "Average",
-//                            description = if (item.ratingReasonDesc != "" && item.ratingReasonDesc != null) item.ratingReasonDesc else item.ratingReasonRemarks
-                                description = "Black in Color"
+                        item {
+                            InspectionIndividuals(
+                                image = it.tire.imageURL,
+                                title = "Tyre",
+                                performance = it.tire.subsystemRating,
+                                selected = selected == "Tires",
+                                modifier = Modifier.clickable {
+                                    selected = "Tires"
+                                    viewModel.selectedParameter = it.tire.parameters.toMutableList()
+                                }
                             )
                         }
+                        item {
+                            InspectionIndividuals(
+                                image = it.electrical.imageURL,
+                                title = "Electrical",
+                                performance = it.electrical.subsystemRating,
+                                selected = selected == "Electrical",
+                                modifier = Modifier.clickable {
+                                    selected = "Electrical"
+                                    viewModel.selectedParameter =
+                                        it.electrical.parameters.toMutableList()
+                                }
+                            )
+                        }
+                        item {
+                            InspectionIndividuals(
+                                image = it.trans.imageURL,
+                                title = "Transmission",
+                                performance = it.trans.subsystemRating,
+                                selected = selected == "Transmission",
+                                modifier = Modifier.clickable {
+                                    selected = "Transmission"
+                                    viewModel.selectedParameter =
+                                        it.trans.parameters.toMutableList()
+                                }
+                            )
+                        }
+                        item {
+                            InspectionIndividuals(
+                                image = it.interior.imageURL,
+                                title = "Interior",
+                                performance = it.interior.subsystemRating,
+                                selected = selected == "Interior",
+                                modifier = Modifier.clickable {
+                                    selected = "Interior"
+                                    viewModel.selectedParameter =
+                                        it.interior.parameters.toMutableList()
+                                }
+                            )
+                        }
+                        item {
+                            InspectionIndividuals(
+                                image = it.exterior.imageURL,
+                                title = "Exterior",
+                                performance = it.exterior.subsystemRating,
+                                selected = selected == "Exterior",
+                                modifier = Modifier.clickable {
+                                    selected = "Exterior"
+                                    viewModel.selectedParameter =
+                                        it.exterior.parameters.toMutableList()
+                                }
+                            )
+                        }
+                        item {
+                            InspectionIndividuals(
+                                image = it.brakes.imageURL,
+                                title = "Brakes",
+                                performance = it.brakes.subsystemRating,
+                                selected = selected == "Brakes",
+                                modifier = Modifier.clickable {
+                                    selected = "Brakes"
+                                    viewModel.selectedParameter =
+                                        it.brakes.parameters.toMutableList()
+                                }
+                            )
+                        }
+                        item {
+                            InspectionIndividuals(
+                                image = it.steering.imageURL,
+                                title = "Steering",
+                                performance = it.steering.subsystemRating,
+                                selected = selected == "Steering",
+                                modifier = Modifier.clickable {
+                                    selected = "Steering"
+                                    viewModel.selectedParameter =
+                                        it.steering.parameters.toMutableList()
+                                }
+                            )
+                        }
+                    }
 
+                    LazyColumn(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                    ) {
+                        item {
+                            Text(
+                                modifier = Modifier.padding(horizontal = 10.dp),
+                                text = "$selected Status",
+                                color = Color.White,
+                                style = TextStyle(
+                                    fontSize = 10.sp
+                                )
+                            )
+                        }
+                        viewModel.selectedParameter?.let { parameter ->
+                            itemsIndexed(parameter) { index, item ->
+                                item?.let { it1 ->
+                                    PerformanceData(
+                                        title = it1.parameterName,
+                                        performance = it1.parameterRating,
+                                        description = if (it1.ratingReasonDesc != "" && it1.ratingReasonDesc != null) it1.ratingReasonDesc else it1.ratingReasonRemarks,
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
-//                }
             }
-
         }
     }
 }
@@ -362,28 +481,24 @@ fun InspectionIndividuals(
     performance: String,
     selected: Boolean = false,
     modifier: Modifier = Modifier,
-//    parameter: List<Parameter>
+    onClick: () -> Unit = {},
 ) {
-    var showDialogue by remember { mutableStateOf(false) }
     val selectedGradientColors = Brush.verticalGradient(
         listOf(
-//            Color(red = 0.40f, green = 0.56f, blue = 0.92f, alpha = 1f),
-//            Color(red = 0f, green = 0f, blue = 0f, alpha = 0f),
             Color.Transparent,
             Color.Transparent
-
         )
     )
     val nonSelectedGradient = Brush.verticalGradient(
         listOf(
-//            Color(red = 0f, green = 0f, blue = 0f, alpha = 0f),
-//            Color(red = 0f, green = 0f, blue = 0f, alpha = 0f),
             Color.Transparent,
             Color.Transparent
 
         )
     )
-    Column {
+    Column(
+        modifier = modifier
+    ) {
         Box(
             modifier = modifier
                 .background(
@@ -462,122 +577,6 @@ fun InspectionIndividuals(
                 .fillMaxWidth()
         )
     }
-
-    if (showDialogue) {
-        ModalBottomSheet(
-            containerColor = Color.White,
-            onDismissRequest = {
-                showDialogue = false
-            }) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .background(color = Color.White)
-            ) {
-                item {
-                    Row(
-                        modifier = Modifier
-                            .padding(10.dp)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(text = title, color = Color(0xFF213F99))
-                        Image(
-                            modifier = Modifier.clickable {
-                                showDialogue = false
-                            },
-                            painter = painterResource(id = R.drawable.check),
-                            contentDescription = ""
-                        )
-                    }
-                }
-                item {
-                    Canvas(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(1.dp)
-                    ) {
-
-                        drawLine(
-                            color = Color.Gray,
-                            start = Offset(0f, 0f),
-                            end = Offset(size.width, 0f),
-                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
-                        )
-                    }
-                }
-//                parameter?.let { parameter ->
-                items(7) {
-                    when (it) {
-                        1 -> {
-                            PerformanceData(
-                                title = "Radiator",
-                                performance = "Good",
-//                            description = if (item.ratingReasonDesc != "" && item.ratingReasonDesc != null) item.ratingReasonDesc else item.ratingReasonRemarks
-                                description = "Good"
-                            )
-                        }
-
-                        2 -> {
-                            PerformanceData(
-                                title = "Hose Pipe",
-                                performance = "Good",
-//                            description = if (item.ratingReasonDesc != "" && item.ratingReasonDesc != null) item.ratingReasonDesc else item.ratingReasonRemarks
-                                description = "Good"
-                            )
-                        }
-
-                        3 -> {
-                            PerformanceData(
-                                title = "Spark Plug",
-                                performance = "Good",
-//                            description = if (item.ratingReasonDesc != "" && item.ratingReasonDesc != null) item.ratingReasonDesc else item.ratingReasonRemarks
-                                description = "Good"
-                            )
-                        }
-
-                        4 -> {
-                            PerformanceData(
-                                title = "Ignition Coil/Ignitor",
-                                performance = "Good",
-//                            description = if (item.ratingReasonDesc != "" && item.ratingReasonDesc != null) item.ratingReasonDesc else item.ratingReasonRemarks
-                                description = "Good"
-                            )
-                        }
-
-                        5 -> {
-                            PerformanceData(
-                                title = "High Tension Cable",
-                                performance = "Good",
-//                            description = if (item.ratingReasonDesc != "" && item.ratingReasonDesc != null) item.ratingReasonDesc else item.ratingReasonRemarks
-                                description = "Good"
-                            )
-                        }
-
-                        6 -> {
-                            PerformanceData(
-                                title = "Brake Oil",
-                                performance = "Good",
-//                            description = if (item.ratingReasonDesc != "" && item.ratingReasonDesc != null) item.ratingReasonDesc else item.ratingReasonRemarks
-                                description = "Good"
-                            )
-                        }
-
-                        7 -> {
-                            PerformanceData(
-                                title = "Coolant",
-                                performance = "Average",
-//                            description = if (item.ratingReasonDesc != "" && item.ratingReasonDesc != null) item.ratingReasonDesc else item.ratingReasonRemarks
-                                description = "Black in Color"
-                            )
-                        }
-
-                    }
-                }
-//                }
-            }
-        }
-    }
 }
 
 @Composable
@@ -597,7 +596,7 @@ fun Performance(
 }
 
 @Composable
-private fun PerformanceData(
+fun PerformanceData(
     title: String,
     performance: String,
     description: String
@@ -664,97 +663,93 @@ private fun PerformanceData(
 
 @Composable
 fun ServiceEstimate(
-    grandTotal: Double
+    grandTotal: Double,
+    viewModel: MainViewModel
 ) {
-    LazyColumn() {
-        item {
-            ServiceCard(
-                title = "Labour Details",
-                qty = "Qty",
-                rate = "Rate",
-                totalAmount = "TotalAmount",
-                backgroundColor = Color(0xFF6F8EFB).copy(alpha = 0.10f)
-            )
+    if(viewModel.gettingReports){
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            CircularProgressIndicator()
         }
-
-        items(1) {
-            ServiceCard(
-                title = "Renew Window Regulator",
-                qty = "1 Nos",
-                rate = "₹690.00",
-                totalAmount = "₹810.00",
-                backgroundColor = Color.Transparent
-            )
-        }
-
-        item {
-            ServiceCard(
-                title = "Parts Details",
-                qty = "Qty",
-                rate = "Rate",
-                totalAmount = "TotalAmount",
-                backgroundColor = Color(0xFF6F8EFB).copy(alpha = 0.10f)
-            )
-        }
-
-        items(3) {
-            if (it == 0) {
+    } else {
+        LazyColumn() {
+            item {
                 ServiceCard(
-                    title = "Bumper Front (Black)",
-                    qty = "1 Nos",
-                    rate = "₹690.00",
-                    totalAmount = "₹810.00",
-                    backgroundColor = Color.Transparent
-                )
-
-            } else if (it == 1) {
-                ServiceCard(
-                    title = "Regulator Assy, Front Window R",
-                    qty = "1 Nos",
-                    rate = "₹690.00",
-                    totalAmount = "₹810.00",
-                    backgroundColor = Color.Transparent
-                )
-            } else if (it == 2) {
-                ServiceCard(
-                    title = "Cover",
-                    qty = "1 Nos",
-                    rate = "₹690.00",
-                    totalAmount = "₹810.00",
-                    backgroundColor = Color.Transparent
+                    title = "Labour Details",
+                    qty = "Qty",
+                    rate = "Rate",
+                    totalAmount = "TotalAmount",
+                    backgroundColor = Color(0xFF6F8EFB).copy(alpha = 0.10f)
                 )
             }
-        }
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-//                    .align(Alignment.End
-                    .padding(10.dp),
-                horizontalArrangement = Arrangement.End
-            ) {
-                Text(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 7.dp),
-                    text = "Grand Total",
-                    style = TextStyle(
-                        fontFamily = FontFamily(Font(R.font.rubik)),
-                        fontWeight = FontWeight(500),
-                        color = Color(0xFFFFFFFF),
-                        fontSize = 12.sp
+
+            viewModel.estimateServiceHistoryDetail?.result?.estimationDetails?.labour?.let {
+                items(it) {
+                    ServiceCard(
+                        title = it.description,
+                        qty = "${it.quantity} Nos",
+                        rate = "₹${it.totalPrice / it.quantity}",
+                        totalAmount = "₹${it.totalPrice}",
+                        backgroundColor = Color.Transparent
                     )
+                }
+            }
+
+            item {
+                ServiceCard(
+                    title = "Parts Details",
+                    qty = "Qty",
+                    rate = "Rate",
+                    totalAmount = "TotalAmount",
+                    backgroundColor = Color(0xFF6F8EFB).copy(alpha = 0.10f)
                 )
-                Text(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 7.dp),
-                    text = "₹3240.00",
-                    style = TextStyle(
-                        fontFamily = FontFamily(Font(R.font.rubik)),
-                        fontWeight = FontWeight(500),
-                        color = Color(0xFF89F38D),
-                        fontSize = 12.sp
+            }
+
+            viewModel.estimateServiceHistoryDetail?.result?.estimationDetails?.parts?.let {
+                items(it) {
+                    ServiceCard(
+                        title = it.description,
+                        qty = "${it.quantity} Nos",
+                        rate = "₹${it.totalPrice / it.quantity}",
+                        totalAmount = "₹${it.totalPrice}",
+                        backgroundColor = Color.Transparent
                     )
-                )
+                }
+            }
+
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 7.dp),
+                        text = "Grand Total",
+                        style = TextStyle(
+                            fontFamily = FontFamily(Font(R.font.rubik)),
+                            fontWeight = FontWeight(500),
+                            color = Color(0xFFFFFFFF),
+                            fontSize = 12.sp
+                        )
+                    )
+                    Text(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 7.dp),
+                        text = "₹3240.00",
+                        style = TextStyle(
+                            fontFamily = FontFamily(Font(R.font.rubik)),
+                            fontWeight = FontWeight(500),
+                            color = Color(0xFF89F38D),
+                            fontSize = 12.sp
+                        )
+                    )
+                }
             }
         }
     }

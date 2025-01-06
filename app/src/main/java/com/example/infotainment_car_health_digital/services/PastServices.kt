@@ -14,8 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.material3.Typography
@@ -48,11 +48,12 @@ fun PastServices(viewModel: MainViewModel) {
     Row(
         modifier = Modifier.padding(bottom = 85.dp)
     ) {
-        BookingInformation(Modifier.weight(1f))
+        BookingInformation(Modifier.weight(1f), viewModel)
         Spacer(modifier = Modifier.size(10.dp))
-        ServiceDetail(Modifier.weight(1f),viewModel)
+        ServiceDetail(Modifier.weight(1f), viewModel)
         Spacer(modifier = Modifier.size(10.dp))
-        EstimateReport(Modifier.weight(2.5f))
+        EstimateReport(Modifier.weight(2.5f), viewModel)
+
     }
 }
 
@@ -69,239 +70,181 @@ fun ServiceDetail(modifier: Modifier, viewModel: MainViewModel) {
             style = TextStyle(color = Color.White, fontSize = 14.sp)
         )
         Spacer(modifier = Modifier.size(10.dp))
+        if(viewModel.gettingReports == true){
+            CircularProgressIndicator()
+        } else {
+            Row {
+                serviceHistoryDetail?.let { serviceHistory ->
+                    LazyColumn(
+                        modifier = Modifier.padding(10.dp)
+                    ) {
+                        item {
+                            serviceHistory.result.auditTrail.customerWalkin?.let { customerWalkin ->
+                                ServiceDetailsList(
+                                    image = R.drawable.service,
+                                    description = customerWalkin.name,
+                                    date = customerWalkin.timestamp,
+                                    completed = customerWalkin.isComplete,
+                                    reportKey = customerWalkin.reportKey != "",
+                                    detailMessage = customerWalkin.detailsMessage
+                                )
+                                Spacer(modifier = Modifier.size(5.dp))
+                                Divider(
+                                    modifier = Modifier
+                                        .width(230.dp)
+                                        .background(color = Color.White.copy(alpha = 0.20f)),
+                                    thickness = 2.dp,
+                                    color = Color.White.copy(alpha = 0.20f)
+                                )
+                            }
+                        }
+                        item {
+                            serviceHistory.result.auditTrail.intialEstimationPending?.let { intialEstimationPending ->
+                                ServiceDetailsList(
+                                    modifier = Modifier.clickable {
+                                        if (intialEstimationPending.isComplete) {
+                                            remarkType = intialEstimationPending.reportKey
+                                            viewModel.getInventoryDetail(
+                                                bookingId = bookingId,
+                                                type = intialEstimationPending.reportKey
+                                            )
+                                        }
+                                    },
+                                    image = R.drawable.inspection,
+                                    description = intialEstimationPending.name,
+                                    date = intialEstimationPending.timestamp,
+                                    completed = intialEstimationPending.isComplete,
+                                    reportKey = intialEstimationPending.reportKey != "",
+                                    detailMessage = intialEstimationPending.detailsMessage
+                                )
+                                Spacer(modifier = Modifier.size(5.dp))
+                                Divider(
+                                    modifier = Modifier
+                                        .width(230.dp)
+                                        .background(color = Color.White.copy(alpha = 0.20f)),
+                                    thickness = 2.dp,
+                                    color = Color.White.copy(alpha = 0.20f)
+                                )
+                            }
+                        }
+                        item {
+                            serviceHistory.result.auditTrail.inspectionCompleted?.let { inspectionCompleted ->
+                                ServiceDetailsList(
+                                    modifier = Modifier.clickable {
+                                        if (serviceHistory.result.auditTrail.estimation?.isComplete == true) {
+                                            remarkType =
+                                                serviceHistory.result.auditTrail.estimation.reportKey
+                                            viewModel.getEstimateDetail(
+                                                bookingId = bookingId,
+                                                type = serviceHistory.result.auditTrail.estimation.reportKey
+                                            )
+                                        }
+                                    },
+                                    image = R.drawable.vehicle_inspection,
+                                    description = inspectionCompleted.name,
+                                    date = inspectionCompleted.timestamp,
+                                    completed = inspectionCompleted.isComplete,
+                                    reportKey = inspectionCompleted.reportKey != "",
+                                    detailMessage = inspectionCompleted.detailsMessage
 
-        Row {
-            serviceHistoryDetail?.let { serviceHistory ->
-                LazyColumn(
-                    modifier = Modifier.padding(10.dp)
-                ) {
-                    item {
-                        serviceHistory.result.auditTrail.customerWalkin?.let { customerWalkin ->
-                            ServiceDetailsList(
-                                image = R.drawable.service,
-                                description = customerWalkin.name,
-                                date = customerWalkin.timestamp,
-                                completed = customerWalkin.isComplete,
-                                reportKey = customerWalkin.reportKey != "",
-                                detailMessage = customerWalkin.detailsMessage
-                            )
-                            Spacer(modifier = Modifier.size(5.dp))
-                            Divider(
-                                modifier = Modifier
-                                    .width(230.dp)
-                                    .background(color = Color.White.copy(alpha = 0.20f)),
-                                thickness = 2.dp,
-                                color = Color.White.copy(alpha = 0.20f)
-                            )
+                                )
+                                Spacer(modifier = Modifier.size(5.dp))
+                                Divider(
+                                    modifier = Modifier
+                                        .width(230.dp)
+                                        .background(color = Color.White.copy(alpha = 0.20f)),
+                                    thickness = 2.dp,
+                                    color = Color.White.copy(alpha = 0.20f)
+                                )
+                            }
                         }
-                    }
-                    item {
-                        serviceHistory.result.auditTrail.intialEstimationPending?.let { intialEstimationPending ->
-                            ServiceDetailsList(
-                                modifier = Modifier.clickable {
-                                    if (intialEstimationPending.isComplete) {
-                                        remarkType = intialEstimationPending.reportKey
-                                        viewModel.getInventoryDetail(
-                                            bookingId = bookingId,
-                                            type = intialEstimationPending.reportKey
-                                        )
-                                    }
-                                },
-                                image = R.drawable.inspection,
-                                description = intialEstimationPending.name,
-                                date = intialEstimationPending.timestamp,
-                                completed = intialEstimationPending.isComplete,
-                                reportKey = intialEstimationPending.reportKey != "",
-                                detailMessage = intialEstimationPending.detailsMessage
-                            )
-                            Spacer(modifier = Modifier.size(5.dp))
-                            Divider(
-                                modifier = Modifier
-                                    .width(230.dp)
-                                    .background(color = Color.White.copy(alpha = 0.20f)),
-                                thickness = 2.dp,
-                                color = Color.White.copy(alpha = 0.20f)
-                            )
+                        item {
+                            serviceHistory.result.auditTrail.estimation?.let { estimation ->
+                                ServiceDetailsList(
+                                    modifier = Modifier.clickable {
+                                        if (estimation.isComplete) {
+                                            remarkType =
+                                                estimation.reportKey
+                                            viewModel.getEstimateDetail(
+                                                bookingId = bookingId,
+                                                type = estimation.reportKey
+                                            )
+                                        }
+                                    },
+                                    image = R.drawable.estimation,
+                                    description = estimation.name,
+                                    date = estimation.timestamp,
+                                    completed = estimation.isComplete,
+                                    reportKey = estimation.reportKey != "",
+                                    detailMessage = estimation.detailsMessage
+                                )
+                                Spacer(modifier = Modifier.size(5.dp))
+                                Divider(
+                                    modifier = Modifier
+                                        .width(230.dp)
+                                        .background(color = Color.White.copy(alpha = 0.20f)),
+                                    thickness = 2.dp,
+                                    color = Color.White.copy(alpha = 0.20f)
+                                )
+                            }
                         }
-                    }
-                    item {
-                        serviceHistory.result.auditTrail.inspectionCompleted?.let { inspectionCompleted ->
-                            ServiceDetailsList(
-                                modifier = Modifier.clickable {
-                                    if (serviceHistory.result.auditTrail.estimation?.isComplete == true) {
-                                        remarkType =
-                                            serviceHistory.result.auditTrail.estimation.reportKey
-                                        viewModel.getEstimateDetail(
-                                            bookingId = bookingId,
-                                            type = serviceHistory.result.auditTrail.estimation.reportKey
-                                        )
-                                    }
-                                },
-                                image = R.drawable.vehicle_inspection,
-                                description = inspectionCompleted.name,
-                                date = inspectionCompleted.timestamp,
-                                completed = inspectionCompleted.isComplete,
-                                reportKey = inspectionCompleted.reportKey != "",
-                                detailMessage = inspectionCompleted.detailsMessage
-
-                            )
-                            Spacer(modifier = Modifier.size(5.dp))
-                            Divider(
-                                modifier = Modifier
-                                    .width(230.dp)
-                                    .background(color = Color.White.copy(alpha = 0.20f)),
-                                thickness = 2.dp,
-                                color = Color.White.copy(alpha = 0.20f)
-                            )
+                        item {
+                            serviceHistory.result.auditTrail.workInProgress?.let { workInProgress ->
+                                ServiceDetailsList(
+                                    image = R.drawable.workinprogress,
+                                    description = workInProgress.name,
+                                    date = workInProgress.timestamp,
+                                    completed = workInProgress.isComplete,
+                                    reportKey = workInProgress.reportKey != "",
+                                    detailMessage = workInProgress.detailsMessage
+                                )
+                                Spacer(modifier = Modifier.size(5.dp))
+                                Divider(
+                                    modifier = Modifier
+                                        .width(230.dp)
+                                        .background(color = Color.White.copy(alpha = 0.20f)),
+                                    thickness = 2.dp,
+                                    color = Color.White.copy(alpha = 0.20f)
+                                )
+                            }
                         }
-                    }
-                    item {
-                        serviceHistory.result.auditTrail.estimation?.let { estimation ->
-                            ServiceDetailsList(
-                                modifier = Modifier.clickable {
-                                    if (estimation.isComplete) {
-                                        remarkType =
-                                            estimation.reportKey
-                                        viewModel.getEstimateDetail(
-                                            bookingId = bookingId,
-                                            type = estimation.reportKey
-                                        )
-                                    }
-                                },
-                                image = R.drawable.estimation,
-                                description = estimation.name,
-                                date = estimation.timestamp,
-                                completed = estimation.isComplete,
-                                reportKey = estimation.reportKey != "",
-                                detailMessage = estimation.detailsMessage
-                            )
-                            Spacer(modifier = Modifier.size(5.dp))
-                            Divider(
-                                modifier = Modifier
-                                    .width(230.dp)
-                                    .background(color = Color.White.copy(alpha = 0.20f)),
-                                thickness = 2.dp,
-                                color = Color.White.copy(alpha = 0.20f)
-                            )
+                        item {
+                            serviceHistory.result.auditTrail.postInspectionCompleted?.let { postInspectionCompleted ->
+                                ServiceDetailsList(
+                                    image = R.drawable.finalhealthcheckup,
+                                    description = postInspectionCompleted.name,
+                                    date = postInspectionCompleted.timestamp,
+                                    completed = postInspectionCompleted.isComplete,
+                                    reportKey = postInspectionCompleted.reportKey != "",
+                                    detailMessage = postInspectionCompleted.detailsMessage
+                                )
+                                Spacer(modifier = Modifier.size(5.dp))
+                                Divider(
+                                    modifier = Modifier
+                                        .width(230.dp)
+                                        .background(color = Color.White.copy(alpha = 0.20f)),
+                                    thickness = 2.dp,
+                                    color = Color.White.copy(alpha = 0.20f)
+                                )
+                            }
                         }
-                    }
-                    item {
-                        serviceHistory.result.auditTrail.workInProgress?.let { workInProgress ->
-                            ServiceDetailsList(
-                                image = R.drawable.workinprogress,
-                                description = workInProgress.name,
-                                date = workInProgress.timestamp,
-                                completed = workInProgress.isComplete,
-                                reportKey = workInProgress.reportKey != "",
-                                detailMessage = workInProgress.detailsMessage
-                            )
-                            Spacer(modifier = Modifier.size(5.dp))
-                            Divider(
-                                modifier = Modifier
-                                    .width(230.dp)
-                                    .background(color = Color.White.copy(alpha = 0.20f)),
-                                thickness = 2.dp,
-                                color = Color.White.copy(alpha = 0.20f)
-                            )
-                        }
-                    }
-                    item {
-                        serviceHistory.result.auditTrail.postInspectionCompleted?.let { postInspectionCompleted ->
-                            ServiceDetailsList(
-                                image = R.drawable.finalhealthcheckup,
-                                description = postInspectionCompleted.name,
-                                date = postInspectionCompleted.timestamp,
-                                completed = postInspectionCompleted.isComplete,
-                                reportKey = postInspectionCompleted.reportKey != "",
-                                detailMessage = postInspectionCompleted.detailsMessage
-                            )
-                            Spacer(modifier = Modifier.size(5.dp))
-                            Divider(
-                                modifier = Modifier
-                                    .width(230.dp)
-                                    .background(color = Color.White.copy(alpha = 0.20f)),
-                                thickness = 2.dp,
-                                color = Color.White.copy(alpha = 0.20f)
-                            )
-                        }
-                    }
-                    item {
-                        serviceHistory.result.auditTrail.delivered?.let { delivered ->
-                            ServiceDetailsList(
-                                image = R.drawable.service_vehicle_delivered,
-                                description = delivered.name,
-                                date = delivered.timestamp,
-                                completed = delivered.isComplete,
-                                reportKey = delivered.reportKey != "",
-                                detailMessage = delivered.detailsMessage
-                            )
+                        item {
+                            serviceHistory.result.auditTrail.delivered?.let { delivered ->
+                                ServiceDetailsList(
+                                    image = R.drawable.service_vehicle_delivered,
+                                    description = delivered.name,
+                                    date = delivered.timestamp,
+                                    completed = delivered.isComplete,
+                                    reportKey = delivered.reportKey != "",
+                                    detailMessage = delivered.detailsMessage
+                                )
+                            }
                         }
                     }
                 }
+                Spacer(modifier = Modifier.size(10.dp))
             }
-            Spacer(modifier = Modifier.size(10.dp))
         }
-//        LazyColumn() {
-////            items(6) {
-////                when (it) {
-////                    0 -> {
-////                        ServiceAudit(
-////                            "Service Booking Received",
-////                            "10 : 15 Am , 7th Jan",
-////                            R.drawable.service
-////                        )
-////                    }
-////
-////                    1 -> {
-////                        ServiceAudit(
-////                            "Inventory inspection complete",
-////                            "10 : 20 Am , 7th Jan",
-////                            R.drawable.inspection
-////                        )
-////                    }
-////
-////                    2 -> {
-////                        ServiceAudit(
-////                            "Vehicle inspection complete",
-////                            "10 : 25 Am , 7th Jan",
-////                            R.drawable.vehicle_inspection
-////                        )
-////                    }
-////
-////                    3 -> {
-////                        ServiceAudit(
-////                            "Estimated Approved",
-////                            "10 : 58 Am , 7th Jan",
-////                            R.drawable.estimation
-////                        )
-////                    }
-////
-////                    4 -> {
-////                        ServiceAudit(
-////                            "Repair work in progress",
-////                            "12 : 15 Am , 7th Jan",
-////                            R.drawable.workinprogress
-////                        )
-////                    }
-////
-////                    5 -> {
-////                        ServiceAudit(
-////                            "Final health check complete",
-////                            "04 : 15 Pm , 7th Jan",
-////                            R.drawable.finalhealthcheckup
-////                        )
-////                    }
-////                }
-////                Spacer(modifier = Modifier.size(5.dp))
-////                Spacer(
-////                    modifier = Modifier
-////                        .fillMaxSize()
-////                        .height(1.dp)
-////                        .background(color = Color.White.copy(alpha = 0.1f))
-////                )
-////                Spacer(modifier = Modifier.size(5.dp))
-////            }
-//        }
     }
 }
 
@@ -385,74 +328,81 @@ fun ServiceDetailsList(
 }
 
 @Composable
-fun ServiceAudit(serviceName: String, serviceDate: String, image: Int) {
-    Row {
-        Image(
-            modifier = Modifier
-                .size(30.dp)
-                .border(2.dp, color = Color(0xFF172034), shape = CircleShape)
-                .padding(10.dp),
-            painter = painterResource(id = image),
-            contentDescription = ""
-        )
-        Column(
-            modifier = Modifier.padding(start = 5.dp)
-        ) {
-            Text(
-                text = serviceName,
-                style = TextStyle(
-                    color = Color.White,
-                    fontSize = 14.sp
-                )
-            )
-            Spacer(modifier = Modifier.size(5.dp))
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Image(painter = painterResource(id = R.drawable.check), contentDescription = "")
-                Text(
-                    text = serviceDate,
-                    style = TextStyle(
-                        color = Color.White,
-                        fontSize = 12.sp
-                    )
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun BookingInformation(modifier: Modifier) {
+fun BookingInformation(modifier: Modifier, viewModel: MainViewModel) {
     LazyColumn(
         modifier = modifier
     ) {
-        items(2) {
-            if (it == 0) {
-                BookingInfoBox(
-                    name = "Periodic Maintenance Service",
-                    bookingId = "123456",
-                    bookingDate = "12 Dec 2024",
-                    index = 0
-                )
-            } else {
-                BookingInfoBox(
-                    name = "Engine Overheating",
-                    bookingId = "123456",
-                    bookingDate = "12 Dec 2024",
-                    index = 1
-                )
+        items(3) {
+            when (it) {
+                0 -> {
+                    BookingInfoBox(
+                        modifier = Modifier.clickable {
+                        },
+                        name = "Periodic Maintenance Service",
+                        bookingId = "1004080",
+                        bookingDate = "12 Dec 2024",
+                        index = 0,
+                        viewModel = viewModel
+                    )
+                }
+
+                1 -> {
+                    BookingInfoBox(
+                        modifier = Modifier.clickable {
+                        },
+                        name = "Engine Overheating",
+                        bookingId = "969314",
+                        bookingDate = "12 Dec 2024",
+                        index = 1,
+                        viewModel = viewModel
+                    )
+                }
+
+                2 -> {
+                    BookingInfoBox(
+                        modifier = Modifier.clickable {
+                        },
+                        name = "Battery Error",
+                        bookingId = "867507",
+                        bookingDate = "12 Dec 2024",
+                        index = 2,
+                        viewModel = viewModel
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-fun BookingInfoBox(name: String, bookingId: String, bookingDate: String, index: Int) {
+fun BookingInfoBox(
+    modifier: Modifier,
+    name: String,
+    bookingId: String,
+    bookingDate: String,
+    index: Int,
+    viewModel: MainViewModel
+) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .padding(horizontal = 10.dp, vertical = 5.dp)
             .clickable {
+                when (index) {
+                    0 -> {
+                        viewModel.selectedEstimateTab = 0
+                        viewModel.getServiceHistoryResponse("1004080")
+                    }
+
+                    1 -> {
+                        viewModel.selectedEstimateTab = 0
+                        viewModel.getServiceHistoryResponse("969314")
+                    }
+
+                    2 -> {
+                        viewModel.selectedEstimateTab = 0
+                        viewModel.getServiceHistoryResponse("867507")
+                    }
+                }
                 selectedPastService = index
             }
             .background(color = Color(0xFF1D3354), shape = RoundedCornerShape(size = 10.dp))

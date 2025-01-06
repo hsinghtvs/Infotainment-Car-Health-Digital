@@ -12,7 +12,8 @@ class MainRepository @Inject constructor(
     val vehicleDetailApiResponse: VehicleDetailApiResponse
 ) {
     fun getServiceHistoryResponse(
-        order_id: String
+        order_id: String,
+        token: String
     ) = flow {
         vehicleDetailApiResponse.getServiceHistoryResponse(
             client_code = "MvxW3k482v2o",
@@ -28,12 +29,12 @@ class MainRepository @Inject constructor(
 
     fun getInventoryDetail(
         order_id: String,
-        type: String
+        type: String,
+        token: String
     ) = flow {
         vehicleDetailApiResponse.getInventoryDetail(
             client_code = "MvxW3k482v2o",
-            token = "eyJhbGciOiJSU0EtT0FFUCIsImVuYyI6IkExMjhDQkMtSFMyNTYifQ.MRMs599lWLRZS6SJISaQNnz0HeGW5GMrl_kEeueD5sc97LXMS0QaTPxZ-QcTci0W_gke7QCQdu8d9ujdaHzNuwdlYomjSzEx_z2TbFqnZH0pnSldowBqxbBIqiuB3V_xECyTBLeUuBdMm46r3lgO9Z7CtznbRRQAmRHEt7zD66detDjViHiSkOzAY0hCtiN1etBAKUJtaMz8eE4vbHQfzuoJZkMVY9a7E5q77ucbsUbDPmURKgzAbIWl2xbKMpfYzuTUmOFhG--f54Y1zCaraJBmsk8CYoI5ynFVYO_ipQZuDaDGhWnAMbP1vdFO-FR-JfOTLOLfEZQzjMAWbpoCdw.cjRyMjKItoioT4Erl2tNkQ.hpHvimvs3kZemNjhx9NioAFudr0vvRiS_GkFHKTImjel5SiC4DUvt1Jj73Xo1tQvRob-IArKTZZjl4ZSNDJGUw.dKDBPuuj40FEhDqOObO8fw",
-            order_id = order_id,
+            token = token, order_id = order_id,
             type = type
         ).parse {
             emit(DataState.success(it))
@@ -46,13 +47,28 @@ class MainRepository @Inject constructor(
 
     fun getEstimateDetail(
         order_id: String,
-        type: String
+        type: String,
+        token: String
     ) = flow {
         vehicleDetailApiResponse.getEstimateDetail(
             client_code = "MvxW3k482v2o",
-            token = "eyJhbGciOiJSU0EtT0FFUCIsImVuYyI6IkExMjhDQkMtSFMyNTYifQ.MRMs599lWLRZS6SJISaQNnz0HeGW5GMrl_kEeueD5sc97LXMS0QaTPxZ-QcTci0W_gke7QCQdu8d9ujdaHzNuwdlYomjSzEx_z2TbFqnZH0pnSldowBqxbBIqiuB3V_xECyTBLeUuBdMm46r3lgO9Z7CtznbRRQAmRHEt7zD66detDjViHiSkOzAY0hCtiN1etBAKUJtaMz8eE4vbHQfzuoJZkMVY9a7E5q77ucbsUbDPmURKgzAbIWl2xbKMpfYzuTUmOFhG--f54Y1zCaraJBmsk8CYoI5ynFVYO_ipQZuDaDGhWnAMbP1vdFO-FR-JfOTLOLfEZQzjMAWbpoCdw.cjRyMjKItoioT4Erl2tNkQ.hpHvimvs3kZemNjhx9NioAFudr0vvRiS_GkFHKTImjel5SiC4DUvt1Jj73Xo1tQvRob-IArKTZZjl4ZSNDJGUw.dKDBPuuj40FEhDqOObO8fw",
-            order_id = order_id,
+            token = token, order_id = order_id,
             type = type
+        ).parse {
+            emit(DataState.success(it))
+        }
+    }.catch { error ->
+        Log.d("TAG", "sendData: $error ")
+        emit(DataState.error(error.message))
+    }
+
+    fun getRefreshToken(
+        client_code: String,
+        refresh_token: String
+    ) = flow {
+        vehicleDetailApiResponse.getRefreshToken(
+            client_code = client_code,
+            refresh_token = refresh_token
         ).parse {
             emit(DataState.success(it))
         }

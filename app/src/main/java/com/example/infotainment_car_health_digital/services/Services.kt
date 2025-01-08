@@ -117,7 +117,7 @@ fun Services(viewModel: MainViewModel) {
                             )
                             .padding(10.dp),
                         text = "Due Service",
-                        style = TextStyle(color = Color.White, fontSize = 14.sp)
+                        style = TextStyle(color = Color.White, fontSize = 14.sp,fontFamily = FontFamily(Font(R.font.manrope_bold)))
                     )
                 }
                 Spacer(modifier = Modifier.size(10.dp))
@@ -132,7 +132,7 @@ fun Services(viewModel: MainViewModel) {
                             )
                             .padding(10.dp),
                         text = "Paid Service",
-                        style = TextStyle(color = Color.White, fontSize = 14.sp)
+                        style = TextStyle(color = Color.White, fontSize = 14.sp,fontFamily = FontFamily(Font(R.font.manrope_bold)))
                     )
                 }
             }
@@ -140,7 +140,7 @@ fun Services(viewModel: MainViewModel) {
            if(selectedService == 1){
                Text(
                    text = "Service Details",
-                   style = TextStyle(color = Color.White, fontSize = 14.sp)
+                   style = TextStyle(color = Color.White, fontSize = 14.sp,fontFamily = FontFamily(Font(R.font.manrope_bold)))
                )
                Row(
                    verticalAlignment = Alignment.CenterVertically

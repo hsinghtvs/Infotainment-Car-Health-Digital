@@ -291,6 +291,6 @@ fun IndividualTab(modifier: Modifier, image: Int, name: String) {
             contentDescription = name,
         )
         Spacer(modifier = Modifier.size(10.dp))
-        Text(text = name, style = TextStyle(color = Color.White))
+        Text(text = name, style = TextStyle(color = Color.White, fontFamily = FontFamily(Font(R.font.manrope_bold))))
     }
 }

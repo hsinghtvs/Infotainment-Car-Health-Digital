@@ -25,6 +25,8 @@ import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -121,7 +123,10 @@ fun Tabs(
                             .padding(10.dp),
                         text = tabItem.title,
                         maxLines = 1,
-                        style = TextStyle(color = Color.White, fontSize = 14.sp)
+                        style = TextStyle(color = Color.White, fontSize = 14.sp,fontFamily = FontFamily(
+                            Font(R.font.manrope_bold)
+                        )
+                        )
                     )
                 }
             }

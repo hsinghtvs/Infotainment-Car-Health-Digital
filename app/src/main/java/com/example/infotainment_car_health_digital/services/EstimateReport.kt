@@ -477,7 +477,7 @@ fun InspectionIndividuals(
                 Text(
                     text = performance,
                     style = TextStyle(
-                        fontFamily = FontFamily(Font(R.font.manrope_bold)),
+                        fontFamily = FontFamily(Font(R.font.manrope_medium)),
                         fontWeight = FontWeight(600),
                         color = when (performance) {
                             "Good" -> Color(0xFF059C05)
@@ -550,7 +550,7 @@ fun PerformanceData(
                     maxLines = 1,
                     text = title,
                     style = TextStyle(
-                        fontFamily = FontFamily(Font(R.font.manrope_medium)),
+                        fontFamily = FontFamily(Font(R.font.manrope_regular)),
                         fontWeight = FontWeight(100),
                         color = Color.White,
                         fontSize = 12.sp
@@ -562,7 +562,7 @@ fun PerformanceData(
                         maxLines = 1,
                         text = description,
                         style = TextStyle(
-                            fontFamily = FontFamily(Font(R.font.manrope_medium)),
+                            fontFamily = FontFamily(Font(R.font.manrope_regular)),
                             fontWeight = FontWeight(400),
                             color = Color.Gray.copy(alpha = 0.65f),
                             fontSize = 12.sp
@@ -574,7 +574,7 @@ fun PerformanceData(
             Text(
                 text = performance,
                 style = TextStyle(
-                    fontFamily = FontFamily(Font(R.font.manrope_medium)),
+                    fontFamily = FontFamily(Font(R.font.manrope_regular)),
                     fontWeight = FontWeight(600),
                     color = Color.Gray,
                     fontSize = 12.sp

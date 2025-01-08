@@ -19,7 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
-import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -328,7 +327,7 @@ fun ServiceDetailsList(
                     style = TextStyle(
                         fontSize = 12.sp,
                         lineHeight = 18.sp,
-                        fontFamily = FontFamily(Font(R.font.manrope_medium)),
+                        fontFamily = FontFamily(Font(R.font.manrope_regular)),
                         fontWeight = FontWeight(400),
                         color = if (completed) Color(0xFFFFFFFF) else Color(0xFF808080),
                     )
@@ -449,12 +448,12 @@ fun BookingInfoBox(
         ) {
             Text(
                 text = name,
-                style = Typography().labelSmall.copy(color = Color.White)
+                style = TextStyle(fontFamily = FontFamily(Font(R.font.manrope_extrabold)),color = Color.White)
             )
             Spacer(modifier = Modifier.size(10.dp))
             Text(
                 text = "Booking Id $bookingId",
-                style = Typography().labelSmall.copy(color = Color.Gray)
+                style = TextStyle(fontFamily = FontFamily(Font(R.font.manrope_medium)), color = Color.White)
             )
             Row(
                 modifier = Modifier
@@ -464,7 +463,7 @@ fun BookingInfoBox(
             ) {
                 Text(
                     text = bookingDate,
-                    style = Typography().labelSmall.copy(color = Color.Gray)
+                    style = TextStyle(fontFamily = FontFamily(Font(R.font.manrope_medium)), color = Color.White)
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Image(
@@ -475,7 +474,7 @@ fun BookingInfoBox(
                 Spacer(modifier = Modifier.size(2.dp))
                 Text(
                     text = "my TvsGunidy",
-                    style = Typography().labelSmall.copy(color = Color.Gray)
+                    style = TextStyle(fontFamily = FontFamily(Font(R.font.manrope_medium)), color = Color.White)
                 )
             }
 

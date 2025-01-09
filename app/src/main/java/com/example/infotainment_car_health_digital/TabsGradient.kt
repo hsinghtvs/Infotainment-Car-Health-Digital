@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -87,7 +88,7 @@ fun Tabs(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.Bottom
         ) {
-            Row(
+            LazyRow(
                 modifier = Modifier
                     .background(
                         brush = rowBackGroundGradient,
@@ -95,39 +96,42 @@ fun Tabs(
                     )
                     .border(1.dp, brush = itemsBorderGradient, shape = RoundedCornerShape(30.dp)),
                 verticalAlignment = Alignment.CenterVertically
-            ){
-                tabs.forEachIndexed { index, tabItem ->
+            ) {
+                item {
+                    tabs.forEachIndexed { index, tabItem ->
 
-                    Text(
-                        modifier = Modifier
-                            .onGloballyPositioned { coordinates ->
-                                if (tabIndicatorPositions.size < tabs.size) {
-                                    val position =
-                                        with(density) { coordinates.boundsInRoot().bottomCenter.x.toDp() } -
-                                                HALF_INDICATOR_WIDTH
-                                    if (position >= DEFAULT_INDICATOR_POSITION) {
-                                        tabIndicatorPositions.add(position)
+                        Text(
+                            modifier = Modifier
+                                .onGloballyPositioned { coordinates ->
+                                    if (tabIndicatorPositions.size < tabs.size) {
+                                        val position =
+                                            with(density) { coordinates.boundsInRoot().bottomCenter.x.toDp() } -
+                                                    HALF_INDICATOR_WIDTH
+                                        if (position >= DEFAULT_INDICATOR_POSITION) {
+                                            tabIndicatorPositions.add(position)
+                                        }
                                     }
                                 }
-                            }
-                            .clickable(
-                                indication = null,
-                                interactionSource = MutableInteractionSource()
-                            ) {
-                                onTabSelect(tabItem)
-                            }
-                            .background(
-                                brush = if (selectedIndex == index) buttonBackGroundGradient else transparentGradient,
-                                shape = RoundedCornerShape(30.dp)
+                                .clickable(
+                                    indication = null,
+                                    interactionSource = MutableInteractionSource()
+                                ) {
+                                    onTabSelect(tabItem)
+                                }
+                                .background(
+                                    brush = if (selectedIndex == index) buttonBackGroundGradient else transparentGradient,
+                                    shape = RoundedCornerShape(30.dp)
+                                )
+                                .padding(10.dp),
+                            text = tabItem.title,
+                            maxLines = 1,
+                            style = TextStyle(
+                                color = Color.White, fontSize = 14.sp, fontFamily = FontFamily(
+                                    Font(R.font.manrope_bold)
+                                )
                             )
-                            .padding(10.dp),
-                        text = tabItem.title,
-                        maxLines = 1,
-                        style = TextStyle(color = Color.White, fontSize = 14.sp,fontFamily = FontFamily(
-                            Font(R.font.manrope_bold)
                         )
-                        )
-                    )
+                    }
                 }
             }
         }

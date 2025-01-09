@@ -31,6 +31,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import com.example.infotainment_car_health_digital.R
@@ -309,15 +310,21 @@ private fun VehicleHealthIndividualComponent(
             )
             Spacer(modifier = Modifier.size(15.dp))
             Text(
+                modifier = Modifier.weight(1f),
                 text = title,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 style = TextStyle(
                     fontFamily = FontFamily(Font(R.font.manrope_bold)),
                     color = Color.White
                 )
             )
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.weight(0.2f))
             Text(
+                modifier = Modifier.weight(1f),
                 text = value,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 style = TextStyle(
                     fontFamily = FontFamily(Font(R.font.manrope_bold)),
                     color = if (value == "GOOD") Color(0xFF3DED4F) else Color.Red

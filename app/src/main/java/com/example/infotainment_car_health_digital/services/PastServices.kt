@@ -447,11 +447,15 @@ fun BookingInfoBox(
             modifier = Modifier.padding(10.dp)
         ) {
             Text(
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 text = name,
                 style = TextStyle(fontFamily = FontFamily(Font(R.font.manrope_extrabold)),color = Color.White)
             )
             Spacer(modifier = Modifier.size(10.dp))
             Text(
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 text = "Booking Id $bookingId",
                 style = TextStyle(fontFamily = FontFamily(Font(R.font.manrope_medium)), color = Color.White)
             )
@@ -462,6 +466,9 @@ fun BookingInfoBox(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
+                    modifier = Modifier.weight(1.2f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     text = bookingDate,
                     style = TextStyle(fontFamily = FontFamily(Font(R.font.manrope_medium)), color = Color.White)
                 )
@@ -473,6 +480,9 @@ fun BookingInfoBox(
                 )
                 Spacer(modifier = Modifier.size(2.dp))
                 Text(
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     text = "my TvsGunidy",
                     style = TextStyle(fontFamily = FontFamily(Font(R.font.manrope_medium)), color = Color.White)
                 )

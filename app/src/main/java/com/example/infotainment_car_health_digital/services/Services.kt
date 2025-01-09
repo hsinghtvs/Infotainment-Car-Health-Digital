@@ -117,7 +117,11 @@ fun Services(viewModel: MainViewModel) {
                             )
                             .padding(10.dp),
                         text = "Due Service",
-                        style = TextStyle(color = Color.White, fontSize = 14.sp,fontFamily = FontFamily(Font(R.font.manrope_bold)))
+                        style = TextStyle(
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontFamily = FontFamily(Font(R.font.manrope_bold))
+                        )
                     )
                 }
                 Spacer(modifier = Modifier.size(10.dp))
@@ -132,83 +136,95 @@ fun Services(viewModel: MainViewModel) {
                             )
                             .padding(10.dp),
                         text = "Paid Service",
-                        style = TextStyle(color = Color.White, fontSize = 14.sp,fontFamily = FontFamily(Font(R.font.manrope_bold)))
+                        style = TextStyle(
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontFamily = FontFamily(Font(R.font.manrope_bold))
+                        )
                     )
                 }
             }
             Spacer(modifier = Modifier.size(10.dp))
-           if(selectedService == 1){
-               Text(
-                   text = "Service Details",
-                   style = TextStyle(color = Color.White, fontSize = 14.sp,fontFamily = FontFamily(Font(R.font.manrope_bold)))
-               )
-               Row(
-                   verticalAlignment = Alignment.CenterVertically
-               ) {
-                   val tabs = listOf(
-                       TabItem(0, "Service Estimate"),
-                       TabItem(1, "Inspection Report"),
-                       TabItem(2, "Inspection Pictures")
-                   )
-                   var currentTabSelect by remember { mutableStateOf(0) }
-                   Tabs(
-                       tabs = tabs,
-                       onTabSelect = {
-                           currentTabSelect = it.id
-                           viewModel.selectedEstimateTab = it.id
-                       },
-                       selectedIndex = viewModel.selectedEstimateTab,
-                       modifier = Modifier.weight(2f)
-                   )
-                   Row(
-                       modifier = Modifier
-                           .weight(1f)
-                           .padding(10.dp)
-                           .background(
-                               brush = rowBackGroundGradient,
-                               shape = RoundedCornerShape(10.dp)
-                           )
-                   ) {
-                       Box(modifier = Modifier) {
-                           Text(
-                               modifier = Modifier
-                                   .background(
-                                       brush = transparentGradient,
-                                       shape = RoundedCornerShape(30.dp)
-                                   )
-                                   .padding(10.dp),
-                               text = "Over All Rating",
-                               style = TextStyle(
-                                   fontFamily = FontFamily(Font(R.font.manrope_bold)),
-                                   color = Color.White,
-                                   fontSize = 14.sp
-                               )
-                           )
-                       }
-                       Spacer(modifier = Modifier.size(10.dp))
-                       Box(modifier = Modifier) {
-                           viewModel.estimateServiceHistoryDetail?.result?.inspectionDetails?.overallRating?.let {
-                               Text(
-                                   modifier = Modifier
-                                       .background(
-                                           brush = transparentGradient,
-                                           shape = RoundedCornerShape(30.dp)
-                                       )
-                                       .padding(vertical = 10.dp),
-                                   text = it,
-                                   maxLines = 1,
-                                   overflow = TextOverflow.Ellipsis,
-                                   style = TextStyle(
-                                       fontFamily = FontFamily(Font(R.font.manrope_medium)),
-                                       color = Color(0xFF059C05),
-                                       fontSize = 14.sp
-                                   )
-                               )
-                           }
-                       }
-                   }
-               }
-           }
+            if (selectedService == 1) {
+                Text(
+                    text = "Service Details",
+                    style = TextStyle(
+                        color = Color.White,
+                        fontSize = 14.sp,
+                        fontFamily = FontFamily(Font(R.font.manrope_bold))
+                    )
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val tabs = listOf(
+                        TabItem(0, "Service Estimate"),
+                        TabItem(1, "Inspection Report"),
+                        TabItem(2, "Inspection Pictures")
+                    )
+                    var currentTabSelect by remember { mutableStateOf(0) }
+                    Tabs(
+                        tabs = tabs,
+                        onTabSelect = {
+                            currentTabSelect = it.id
+                            viewModel.selectedEstimateTab = it.id
+                        },
+                        selectedIndex = viewModel.selectedEstimateTab,
+                        modifier = Modifier.weight(2f)
+                    )
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(10.dp)
+                            .background(
+                                brush = rowBackGroundGradient,
+                                shape = RoundedCornerShape(10.dp)
+                            )
+                    ) {
+                        Box(
+                            modifier = Modifier.weight(2f)
+                        ) {
+                            Text(
+                                modifier = Modifier
+                                    .background(
+                                        brush = transparentGradient,
+                                        shape = RoundedCornerShape(30.dp)
+                                    )
+                                    .padding(10.dp),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                text = "Over All Rating",
+                                style = TextStyle(
+                                    fontFamily = FontFamily(Font(R.font.manrope_bold)),
+                                    color = Color.White,
+                                    fontSize = 14.sp
+                                )
+                            )
+                        }
+                        Spacer(modifier = Modifier.size(10.dp))
+                        Box(modifier = Modifier.weight(0.5f)) {
+                            viewModel.estimateServiceHistoryDetail?.result?.inspectionDetails?.overallRating?.let {
+                                Text(
+                                    modifier = Modifier
+                                        .background(
+                                            brush = transparentGradient,
+                                            shape = RoundedCornerShape(30.dp)
+                                        )
+                                        .padding(vertical = 10.dp),
+                                    text = it,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    style = TextStyle(
+                                        fontFamily = FontFamily(Font(R.font.manrope_medium)),
+                                        color = Color(0xFF059C05),
+                                        fontSize = 14.sp
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
 
 
@@ -222,11 +238,11 @@ fun Services(viewModel: MainViewModel) {
             ) {
                 items(3) {
                     if (it == 0) {
-                        ServiceBox(name = "Periodic Maintenance Service", date = "14 Jan")
+                        ServiceBox(name = "Periodic Maintenance Service", date = "01 Feb")
                     } else if (it == 1) {
-                        ServiceBox(name = "Brake Checkup", date = "18 Jan")
+                        ServiceBox(name = "Brake Checkup", date = "18 Mar")
                     } else if (it == 2) {
-                        ServiceBox(name = "AC Checkup", date = "22 Jan")
+                        ServiceBox(name = "AC Checkup", date = "20 Apr")
                     }
                 }
             }
@@ -261,14 +277,20 @@ private fun ServiceBox(name: String, date: String) {
         ) {
             Spacer(modifier = Modifier.size(15.dp))
             Text(
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 text = name,
                 style = TextStyle(
                     fontFamily = FontFamily(Font(R.font.manrope_bold)),
                     color = Color.White
                 )
             )
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.weight(0.2f))
             Text(
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 text = date,
                 style = TextStyle(
                     fontFamily = FontFamily(Font(R.font.manrope_bold)),

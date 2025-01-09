@@ -171,10 +171,10 @@ private fun NextServiceDue(modifier: Modifier) {
         )
         Spacer(modifier = Modifier.size(10.dp))
         LazyColumn() {
-            items(3) {
-                ServiceBox(name = "Periodic Maintenance Service", date = "14 Jan")
-                ServiceBox(name = "Brake Checkup", date = "18 Jan")
-                ServiceBox(name = "AC Checkup", date = "22 Jan")
+            items(1) {
+                ServiceBox(name = "Periodic Maintenance Service", date = "14 Feb")
+                ServiceBox(name = "Brake Checkup", date = "18 Mar")
+                ServiceBox(name = "AC Checkup", date = "22 Apr")
             }
         }
     }
@@ -204,14 +204,18 @@ private fun ServiceBox(name: String, date: String) {
         ) {
             Spacer(modifier = Modifier.size(10.dp))
             Text(
+                modifier = Modifier.weight(1f),
                 text = name,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 style = TextStyle(
                     fontFamily = FontFamily(Font(R.font.manrope_bold)),
                     color = Color.White
                 )
             )
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.weight(0.1f))
             Text(
+                modifier = Modifier.weight(1f),
                 text = date,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -291,6 +295,6 @@ fun IndividualTab(modifier: Modifier, image: Int, name: String) {
             contentDescription = name,
         )
         Spacer(modifier = Modifier.size(10.dp))
-        Text(text = name, style = TextStyle(color = Color.White, fontFamily = FontFamily(Font(R.font.manrope_bold))))
+        Text(maxLines = 1, overflow = TextOverflow.Ellipsis, text = name, style = TextStyle(color = Color.White, fontFamily = FontFamily(Font(R.font.manrope_bold))))
     }
 }

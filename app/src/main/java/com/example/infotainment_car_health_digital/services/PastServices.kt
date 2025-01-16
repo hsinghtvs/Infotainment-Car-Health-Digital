@@ -53,8 +53,8 @@ fun PastServices(viewModel: MainViewModel) {
         BookingInformation(Modifier.weight(1f), viewModel)
         Spacer(modifier = Modifier.size(10.dp))
         ServiceDetail(Modifier.weight(1f), viewModel)
-        Spacer(modifier = Modifier.size(10.dp))
-        EstimateReport(Modifier.weight(2.5f), viewModel)
+//        Spacer(modifier = Modifier.size(10.dp))
+//        EstimateReport(Modifier.weight(2.5f), viewModel)
 
     }
 }
@@ -129,14 +129,14 @@ fun ServiceDetail(modifier: Modifier, viewModel: MainViewModel) {
                             serviceHistory.result.auditTrail.inspectionCompleted?.let { inspectionCompleted ->
                                 ServiceDetailsList(
                                     modifier = Modifier.clickable {
-                                        if (serviceHistory.result.auditTrail.estimation?.isComplete == true) {
-                                            remarkType =
-                                                serviceHistory.result.auditTrail.estimation.reportKey
-                                            viewModel.getEstimateDetail(
-                                                bookingId = bookingId,
-                                                type = serviceHistory.result.auditTrail.estimation.reportKey
-                                            )
-                                        }
+//                                        if (serviceHistory.result.auditTrail.estimation?.isComplete == true) {
+//                                            remarkType =
+//                                                serviceHistory.result.auditTrail.estimation.reportKey
+//                                            viewModel.getEstimateDetail(
+//                                                bookingId = bookingId,
+//                                                type = serviceHistory.result.auditTrail.estimation.reportKey
+//                                            )
+//                                        }
                                     },
                                     image = R.drawable.vehicle_inspection,
                                     description = inspectionCompleted.name,
@@ -160,14 +160,14 @@ fun ServiceDetail(modifier: Modifier, viewModel: MainViewModel) {
                             serviceHistory.result.auditTrail.estimation?.let { estimation ->
                                 ServiceDetailsList(
                                     modifier = Modifier.clickable {
-                                        if (estimation.isComplete) {
-                                            remarkType =
-                                                estimation.reportKey
-                                            viewModel.getEstimateDetail(
-                                                bookingId = bookingId,
-                                                type = estimation.reportKey
-                                            )
-                                        }
+//                                        if (estimation.isComplete) {
+//                                            remarkType =
+//                                                estimation.reportKey
+//                                            viewModel.getEstimateDetail(
+//                                                bookingId = bookingId,
+//                                                type = estimation.reportKey
+//                                            )
+//                                        }
                                     },
                                     image = R.drawable.estimation,
                                     description = estimation.name,
@@ -332,15 +332,15 @@ fun ServiceDetailsList(
                         color = if (completed) Color(0xFFFFFFFF) else Color(0xFF808080),
                     )
                 )
-                if (completed && reportKey) {
-                    Image(
-                        modifier = Modifier
-                            .size(20.dp)
-                            .padding(start = 2.dp),
-                        painter = painterResource(id = R.drawable.file_open),
-                        contentDescription = ""
-                    )
-                }
+//                if (completed && reportKey) {
+//                    Image(
+//                        modifier = Modifier
+//                            .size(20.dp)
+//                            .padding(start = 2.dp),
+//                        painter = painterResource(id = R.drawable.file_open),
+//                        contentDescription = ""
+//                    )
+//                }
             }
         }
     }
@@ -360,7 +360,7 @@ fun BookingInformation(modifier: Modifier, viewModel: MainViewModel) {
                         },
                         name = "Periodic Maintenance Service",
                         bookingId = "1004080",
-                        bookingDate = "12 Dec 2024",
+                        bookingDate = "01 Jan 2025",
                         index = 0,
                         viewModel = viewModel
                     )
@@ -372,7 +372,7 @@ fun BookingInformation(modifier: Modifier, viewModel: MainViewModel) {
                         },
                         name = "Engine Overheating",
                         bookingId = "969314",
-                        bookingDate = "12 Dec 2024",
+                        bookingDate = "30 Nov 2024",
                         index = 1,
                         viewModel = viewModel
                     )
@@ -382,9 +382,9 @@ fun BookingInformation(modifier: Modifier, viewModel: MainViewModel) {
                     BookingInfoBox(
                         modifier = Modifier.clickable {
                         },
-                        name = "Battery Error",
+                        name = "Battery Replacement",
                         bookingId = "867507",
-                        bookingDate = "12 Dec 2024",
+                        bookingDate = "31 Jul 2024",
                         index = 2,
                         viewModel = viewModel
                     )
@@ -403,13 +403,6 @@ fun BookingInfoBox(
     index: Int,
     viewModel: MainViewModel
 ) {
-    val backGroundGradient = Brush.verticalGradient(
-        listOf(
-            Color(0xFF000000).copy(alpha = 0.2f),
-            Color(0xFF76ADFF).copy(alpha = 0.2f)
-        )
-    )
-
     Box(
         modifier = modifier
             .padding(horizontal = 10.dp, vertical = 5.dp)
@@ -432,7 +425,7 @@ fun BookingInfoBox(
                 }
                 selectedPastService = index
             }
-            .background(brush = backGroundGradient, shape = RoundedCornerShape(size = 10.dp))
+            .background(brush = viewModel.buttonBackGroundGradient, shape = RoundedCornerShape(size = 10.dp))
             .border(
                 width = 1.dp,
                 color = if (selectedPastService == index) {
@@ -450,14 +443,21 @@ fun BookingInfoBox(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 text = name,
-                style = TextStyle(fontFamily = FontFamily(Font(R.font.manrope_extrabold)),color = Color.White)
+                style = TextStyle(
+                    fontSize = 16.sp,
+                    fontFamily = FontFamily(Font(R.font.manrope_extrabold)),
+                    color = Color.White
+                )
             )
             Spacer(modifier = Modifier.size(10.dp))
             Text(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 text = "Booking Id $bookingId",
-                style = TextStyle(fontFamily = FontFamily(Font(R.font.manrope_medium)), color = Color.White)
+                style = TextStyle(
+                    fontFamily = FontFamily(Font(R.font.manrope_medium)),
+                    color = Color.White
+                )
             )
             Row(
                 modifier = Modifier
@@ -470,11 +470,14 @@ fun BookingInfoBox(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     text = bookingDate,
-                    style = TextStyle(fontFamily = FontFamily(Font(R.font.manrope_medium)), color = Color.White)
+                    style = TextStyle(
+                        fontFamily = FontFamily(Font(R.font.manrope_medium)),
+                        color = Color.White
+                    )
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Image(
-                    modifier = Modifier.size(10.dp),
+                    modifier = Modifier.size(15.dp),
                     painter = painterResource(id = R.drawable.location),
                     contentDescription = ""
                 )
@@ -483,8 +486,11 @@ fun BookingInfoBox(
                     modifier = Modifier.weight(1f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    text = "my TvsGunidy",
-                    style = TextStyle(fontFamily = FontFamily(Font(R.font.manrope_medium)), color = Color.White)
+                    text = "myTVS Guindy",
+                    style = TextStyle(
+                        fontFamily = FontFamily(Font(R.font.manrope_medium)),
+                        color = Color.White
+                    )
                 )
             }
 

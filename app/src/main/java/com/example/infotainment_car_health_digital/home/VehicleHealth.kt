@@ -25,14 +25,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import com.example.infotainment_car_health_digital.R
 
@@ -46,84 +47,85 @@ fun VehicleHealth(
     batteryStatus: String,
     engineStatus: String,
     coolingStatus: String,
-    airIntakeStatus: String
+    tyre: String
 ) {
     var selectedComponent by remember { mutableStateOf("") }
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.size(10.dp))
         Row(
-            modifier = Modifier
+            modifier = Modifier,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Box(modifier = Modifier
                 .onGloballyPositioned {
                     widthOfImage = it.size.width
                     heightOfImage = it.size.height
                 }
-                .weight(2f)
+                .weight(1.5f)
             ) {
                 Image(
                     modifier = Modifier
-                        .align(Alignment.Center)
-                        .size(width = 793.dp, height = 470.dp),
+                        .align(Alignment.Center),
                     painter = painterResource(id = R.drawable.car_image),
-                    contentDescription = "",
-                    contentScale = ContentScale.FillBounds
+                    contentDescription = ""
                 )
-                if (selectedComponent == "ENGINE") {
-                    Engine(
-                        engineStatus = engineStatus,
-                        modifier = Modifier
-                    )
-                } else if (selectedComponent.isEmpty()) {
-                    Engine(
-                        engineStatus = engineStatus,
-                        modifier = Modifier
-                    )
-                }
-                if (selectedComponent == "BATTERY") {
-                    Battery(
-                        batteryStatus = batteryStatus,
-                        modifier = Modifier
-                    )
-                } else if (selectedComponent.isEmpty()) {
-                    Battery(
-                        batteryStatus = batteryStatus,
-                        modifier = Modifier
-                    )
-                }
-                if (selectedComponent == "INTAKE AIR TEMP") {
-                    AirInTake(
-                        airIntakeStatus = airIntakeStatus,
-                        modifier = Modifier
-                    )
-                } else if (selectedComponent.isEmpty()) {
-                    AirInTake(
-                        airIntakeStatus = airIntakeStatus,
-                        modifier = Modifier
-                    )
-                }
-                if (selectedComponent == "ENGINE COOLING") {
-                    Cooling(
-                        coolingStatus = coolingStatus,
-                        modifier = Modifier
-                    )
-                } else if (selectedComponent.isEmpty()) {
-                    Cooling(
-                        coolingStatus = coolingStatus,
-                        modifier = Modifier
-                    )
-                }
+//                if (selectedComponent == "ENGINE") {
+//                    Engine(
+//                        engineStatus = engineStatus,
+//                        modifier = Modifier
+//                    )
+//                } else if (selectedComponent.isEmpty()) {
+//                    Engine(
+//                        engineStatus = engineStatus,
+//                        modifier = Modifier
+//                    )
+//                }
+//                if (selectedComponent == "BATTERY") {
+//                    Battery(
+//                        batteryStatus = batteryStatus,
+//                        modifier = Modifier
+//                    )
+//                } else if (selectedComponent.isEmpty()) {
+//                    Battery(
+//                        batteryStatus = batteryStatus,
+//                        modifier = Modifier
+//                    )
+//                }
+//                if (selectedComponent == "INTAKE AIR TEMP") {
+//                    AirInTake(
+//                        tyre = tyre,
+//                        modifier = Modifier
+//                    )
+//                } else if (selectedComponent.isEmpty()) {
+//                    AirInTake(
+//                        tyre = tyre,
+//                        modifier = Modifier
+//                    )
+//                }
+//                if (selectedComponent == "ENGINE COOLING") {
+//                    Cooling(
+//                        coolingStatus = coolingStatus,
+//                        modifier = Modifier
+//                    )
+//                } else if (selectedComponent.isEmpty()) {
+//                    Cooling(
+//                        coolingStatus = coolingStatus,
+//                        modifier = Modifier
+//                    )
+//                }
             }
             VehicleComponentStatus(
                 batteryStatus = batteryStatus,
                 engineStatus = engineStatus,
                 coolingStatus = coolingStatus,
-                airIntakeStatus = airIntakeStatus,
+                tyre = tyre,
                 componentSelect = selectedComponent,
-                modifier = Modifier.weight(2f)
+                modifier = Modifier.weight(2f).align(Alignment.CenterVertically)
             ) {
                 selectedComponent = it
             }
@@ -155,7 +157,7 @@ private fun Cooling(
 
 @Composable
 private fun AirInTake(
-    airIntakeStatus: String,
+    tyre: String,
     modifier: Modifier = Modifier
 ) {
     Image(
@@ -163,7 +165,7 @@ private fun AirInTake(
             .padding(top = 65.dp)
             .size(width = 793.dp, height = 470.dp),
         painter = painterResource(
-            id = if (airIntakeStatus == "GOOD") {
+            id = if (tyre == "GOOD") {
                 R.drawable.air_intake_good
             } else {
                 R.drawable.air_intake_bad
@@ -219,14 +221,15 @@ fun VehicleComponentStatus(
     batteryStatus: String,
     engineStatus: String,
     coolingStatus: String,
-    airIntakeStatus: String,
+    tyre: String,
     componentSelect: String,
     modifier: Modifier,
     onClick: (String) -> Unit,
 ) {
     LazyColumn(
         modifier = modifier
-            .fillMaxHeight()
+            .fillMaxHeight(),
+        verticalArrangement = Arrangement.Center
     ) {
         item {
             VehicleHealthIndividualComponent(
@@ -260,7 +263,7 @@ fun VehicleComponentStatus(
                 title = "TYRES",
                 statusImage = R.drawable.tyres,
                 componentSelect = componentSelect,
-                value = airIntakeStatus,
+                value = tyre,
                 onClick = {
                     onClick(it)
                 }
@@ -304,28 +307,31 @@ private fun VehicleHealthIndividualComponent(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Image(
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(35.dp),
                 painter = painterResource(id = statusImage),
                 contentDescription = ""
             )
             Spacer(modifier = Modifier.size(15.dp))
             Text(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(2f),
                 text = title,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 style = TextStyle(
+                    fontSize = 14.sp,
                     fontFamily = FontFamily(Font(R.font.manrope_bold)),
                     color = Color.White
                 )
             )
-            Spacer(modifier = Modifier.weight(0.2f))
+            Spacer(modifier = Modifier.weight(0.1f))
             Text(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(0.5f),
                 text = value,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 style = TextStyle(
+                    textAlign = TextAlign.Center,
+                    fontSize = 11.sp,
                     fontFamily = FontFamily(Font(R.font.manrope_bold)),
                     color = if (value == "GOOD") Color(0xFF3DED4F) else Color.Red
                 )

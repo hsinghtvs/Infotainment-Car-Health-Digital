@@ -7,6 +7,8 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.infotainment_car_health_digital.repository.AppSettings
@@ -39,11 +41,81 @@ class MainViewModel @Inject constructor(
     var selectedEstimateTab by mutableStateOf(0)
     var gettingReports by mutableStateOf(false)
     var selectedTab by mutableIntStateOf(0)
+    var bookingDate by mutableStateOf("Pick a Service Date")
+    var bookingTime by mutableStateOf("")
+    var bookingReason by mutableStateOf("")
+    var bookingType by mutableStateOf("")
+    var closeApp by mutableStateOf(false)
+    var intentValue by mutableStateOf(false)
+    var openDialogPre by mutableStateOf(false)
+    var batteryStatus by mutableStateOf("GOOD")
+    var engineStatus by mutableStateOf("GOOD")
+    var coolingStatus by mutableStateOf("GOOD")
+    var tryeStatus by mutableStateOf("GOOD")
 
+    val mainBackGroundGradient = Brush.verticalGradient(
+        listOf(
+            Color(0xFF040A1B).copy(alpha = 1f),
+            Color(0xFF040A1B).copy(alpha = 1f),
+        )
+    )
+
+    val backGroundGradient = Brush.verticalGradient(
+        listOf(
+            Color(0xFF032B9D).copy(alpha = 0f),
+            Color(0xFF040A1B).copy(alpha = 1f),
+        )
+    )
+    val borderGradient = Brush.verticalGradient(
+        listOf(
+            Color(0xFFDDE4FF).copy(alpha = 1f),
+            Color(0xFF040A1B).copy(alpha = 0.4f)
+        )
+    )
+
+
+    val buttonBackGroundGradient = Brush.verticalGradient(
+        listOf(
+            Color(0xFF000000).copy(alpha = 0f),
+            Color(0xFF76ADFF).copy(alpha = 0.2f)
+        )
+    )
+
+    val serviceButtonBackGroundGradient = Brush.verticalGradient(
+        listOf(
+            Color(0xFF255AF5).copy(alpha = 1f),
+            Color(0xFF0B1112).copy(alpha = 0.1f)
+        )
+    )
+
+    val itemsBorderGradient = Brush.verticalGradient(
+        listOf(
+            Color(0xFFFFFFFF).copy(alpha = 0f),
+            Color(0xFFFFFFFF).copy(alpha = 0.1f),
+            Color(0xFF032B9D).copy(alpha = 0.4f)
+        )
+    )
+
+    val tabRowBackGroundGradient = Brush.verticalGradient(
+        listOf(
+            Color(0xFF2EA7FF).copy(alpha = 0f),
+            Color(0xFF2EA7FF).copy(alpha = 0f),
+            Color(0xFF2EA7FF).copy(alpha = 0f),
+            Color(0xFF2EA7FF).copy(alpha = 0.1f)
+        )
+    )
+
+    val transparentGradient = Brush.verticalGradient(
+        listOf(
+            Color.Transparent,
+            Color.Transparent
+        )
+    )
     init {
         getServiceHistoryResponse(serviceHistoryBookings[0])
         appSettings.writeEstimateToken(
-            "eyJhbGciOiJSU0EtT0FFUCIsImVuYyI6IkExMjhDQkMtSFMyNTYifQ.MRMs599lWLRZS6SJISaQNnz0HeGW5GMrl_kEeueD5sc97LXMS0QaTPxZ-QcTci0W_gke7QCQdu8d9ujdaHzNuwdlYomjSzEx_z2TbFqnZH0pnSldowBqxbBIqiuB3V_xECyTBLeUuBdMm46r3lgO9Z7CtznbRRQAmRHEt7zD66detDjViHiSkOzAY0hCtiN1etBAKUJtaMz8eE4vbHQfzuoJZkMVY9a7E5q77ucbsUbDPmURKgzAbIWl2xbKMpfYzuTUmOFhG--f54Y1zCaraJBmsk8CYoI5ynFVYO_ipQZuDaDGhWnAMbP1vdFO-FR-JfOTLOLfEZQzjMAWbpoCdw.cjRyMjKItoioT4Erl2tNkQ.hpHvimvs3kZemNjhx9NioAFudr0vvRiS_GkFHKTImjel5SiC4DUvt1Jj73Xo1tQvRob-IArKTZZjl4ZSNDJGUw.dKDBPuuj40FEhDqOObO8fw"        )
+            "eyJhbGciOiJSU0EtT0FFUCIsImVuYyI6IkExMjhDQkMtSFMyNTYifQ.MRMs599lWLRZS6SJISaQNnz0HeGW5GMrl_kEeueD5sc97LXMS0QaTPxZ-QcTci0W_gke7QCQdu8d9ujdaHzNuwdlYomjSzEx_z2TbFqnZH0pnSldowBqxbBIqiuB3V_xECyTBLeUuBdMm46r3lgO9Z7CtznbRRQAmRHEt7zD66detDjViHiSkOzAY0hCtiN1etBAKUJtaMz8eE4vbHQfzuoJZkMVY9a7E5q77ucbsUbDPmURKgzAbIWl2xbKMpfYzuTUmOFhG--f54Y1zCaraJBmsk8CYoI5ynFVYO_ipQZuDaDGhWnAMbP1vdFO-FR-JfOTLOLfEZQzjMAWbpoCdw.cjRyMjKItoioT4Erl2tNkQ.hpHvimvs3kZemNjhx9NioAFudr0vvRiS_GkFHKTImjel5SiC4DUvt1Jj73Xo1tQvRob-IArKTZZjl4ZSNDJGUw.dKDBPuuj40FEhDqOObO8fw"
+        )
     }
 
     fun getServiceHistoryResponse(bookingId: String) {
@@ -54,11 +126,12 @@ class MainViewModel @Inject constructor(
         ).onEach { dataState ->
             dataState.data?.let { response ->
                 serviceHistoryDetail = response
-                getEstimateDetail(bookingId, "Estimates")
+                gettingReports = false
+//                getEstimateDetail(bookingId, "Estimates")
             }
             dataState.error?.let {
                 Log.d("service", "getServiceHistoryResponse: $it")
-                if(it == "Unauthorized request!!") {
+                if (it == "Unauthorized request!!") {
                     getRefreshToken()
                 }
             }
@@ -120,7 +193,7 @@ class MainViewModel @Inject constructor(
                     selectedParameter =
                         response.result.inspectionDetails.engine.parameters.toMutableList()
                 }
-                getInventoryDetail(bookingId,"Inventory")
+                getInventoryDetail(bookingId, "Inventory")
             }
             dataState.error?.let {
             }

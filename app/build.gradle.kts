@@ -82,4 +82,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:3.4.1")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    implementation("io.ably:ably-android:1.2.40")
+
 }

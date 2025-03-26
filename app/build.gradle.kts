@@ -6,14 +6,16 @@ plugins {
 }
 
 apply(plugin = "kotlin-kapt")
+apply(plugin = "realm-android")
 
 android {
-    namespace = "com.example.infotainment_car_health_digital"
+
+    namespace = "com.mytvs.infotainmentcarhealthdigital"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.infotainment_car_health_digital"
-        minSdk = 24
+        applicationId = "com.mytvs.infotainmentcarhealthdigital"
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -75,6 +77,7 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.1.0")
     implementation("com.google.dagger:hilt-android:2.51.1")
     kapt("com.google.dagger:hilt-android-compiler:2.51.1")
+    implementation("androidx.compose.runtime:runtime-livedata")
 
     // retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
@@ -82,6 +85,30 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:3.4.1")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    //Serial listener dependecy
+    implementation("com.github.mik3y:usb-serial-for-android:3.9.0")
+    implementation("androidx.localbroadcastmanager:localbroadcastmanager:1.0.0")
+
+    //Firebase dependency
+    implementation("com.google.firebase:firebase-database:20.0.2")
+
+    // Widget
+    implementation("androidx.glance:glance:1.1.1")
+    implementation("androidx.glance:glance-appwidget:1.1.1")
+    implementation("androidx.glance:glance-wear-tiles:1.0.0-alpha05")
+
+    // Work Manager
+    implementation("androidx.work:work-runtime-ktx:2.8.1")
+
+    //Androidx Datastore
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    // Maps
+    implementation("com.google.maps.android:maps-compose:2.11.4")
+    implementation("com.google.android.gms:play-services-maps:18.1.0")
+    implementation("com.google.maps.android:android-maps-utils:0.6.2")
+    implementation("com.google.accompanist:accompanist-permissions:0.25.0")
 
     implementation("io.ably:ably-android:1.2.40")
 

@@ -16,6 +16,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.RemoteException
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.getValue
@@ -38,11 +39,13 @@ import com.mytvs.infotainmentcarhealthdigital.serviceKit.CustomProber
 import com.mytvs.infotainmentcarhealthdigital.serviceKit.TextUtil
 import com.mytvs.infotainmentcarhealthdigital.vehicleMAFFuelMileage
 import com.mytvs.infotainmentcarhealthdigital.view.workManager.WidgetWorkManager
+import com.nl.shared.DataInterface
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
 import java.util.Calendar
 import java.util.Objects
+import kotlin.jvm.Throws
 import kotlin.random.Random
 
 
@@ -64,6 +67,14 @@ var deviceconnected by mutableStateOf("Not Connected")
 
 
 class MyService : Service() {
+
+    @get:Throws(RemoteException::class)
+    val mIBinder: DataInterface.Stub =object: DataInterface.Stub() {
+        override fun dataRequest(canData: MutableMap<String, String>?): String {
+            Log.i("MYSERVICE", "Datarequest sending")
+            return "Sample"
+        }
+    }
 
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -263,7 +274,7 @@ class MyService : Service() {
     }
 
     override fun onBind(p0: Intent?): IBinder? {
-        TODO("Not yet implemented")
+        return mIBinder;
     }
 
     private fun engineCoolantTemperatureWidget(context: Context) {

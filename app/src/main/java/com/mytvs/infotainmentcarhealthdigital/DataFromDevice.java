@@ -4,6 +4,7 @@ import static android.content.Context.MODE_PRIVATE;
 
 import android.Manifest;
 import android.app.PendingIntent;
+import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -56,13 +57,16 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import io.realm.Realm;
+
 
 public class DataFromDevice implements ServiceConnection, SerialListener {
     private enum Connected {False, Pending, True}
@@ -131,7 +135,6 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
     private Realm realm;
     ConnectivityReceiver connectivityReceiver;
 
-
     public static DataFromDevice getInstance(Context ctx) {
         context = ctx;
         if (instance == null) {
@@ -151,7 +154,7 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
 
         deviceId = sh.getInt("device", 0);
         portNum = sh.getInt("port", 0);
-        baudRate = 38400;
+        baudRate = 500;
 
         connectivityReceiver = new ConnectivityReceiver();
         IntentFilter intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
@@ -192,6 +195,8 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
             };
             handler.postDelayed(locationUpdater, 0);
         }
+
+
     }
 
 
@@ -288,10 +293,10 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
     }
 
     private void sendCommands() {
-        if (!initializationDone) {
-            sendInitializationCommands();
-            initializationDone = true;
-        }
+//        if (!initializationDone) {
+//            sendInitializationCommands();
+//            initializationDone = true;
+//        }
         sendIntervalCommands();
     }
 
@@ -337,21 +342,21 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
             }
             UDSresponse = 0;
             send(request);
-            while (UDSresponse != 1) {
-                Thread.sleep(500); // Delay for 10 milliseconds
-                if (UDSresponse == 1) {
-                    break;
-                }
-                Thread.sleep(500); // Delay for 10 milliseconds
-                if (UDSresponse == 2) {
-                    // Select Any one of Them Until Akhilesh Changes to Auto Protocol
-                    // Klen Vehicle
-                    send("ATTP6");
-                    Thread.sleep(500); // Delay for 10 milliseconds
-                    send(request);
-                    Thread.sleep(500); // Delay for 10 milliseconds
-                }
-            }
+//            while (UDSresponse != 1) {
+//                Thread.sleep(500); // Delay for 10 milliseconds
+//                if (UDSresponse == 1) {
+//                    break;
+//                }
+//                Thread.sleep(500); // Delay for 10 milliseconds
+//                if (UDSresponse == 2) {
+//                    // Select Any one of Them Until Akhilesh Changes to Auto Protocol
+//                    // Klen Vehicle
+//                    send("ATTP6");
+//                    Thread.sleep(500); // Delay for 10 milliseconds
+//                    send(request);
+//                    Thread.sleep(500); // Delay for 10 milliseconds
+//                }
+//            }
             request_index++;
             if (request_index == 18) {
                 request_index = 0;
@@ -387,7 +392,7 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
         try {
             String msg;
             byte[] data;
-            Charset charset = StandardCharsets.US_ASCII;
+            Charset charset = StandardCharsets.UTF_8;
             if (hexEnabled) {
                 StringBuilder sb = new StringBuilder();
                 TextUtil.toHexString(sb, TextUtil.fromHexString(str));
@@ -421,7 +426,7 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
         String req_res = "";
 
 
-        Charset charset = StandardCharsets.US_ASCII;
+        Charset charset = StandardCharsets.UTF_8;
         for (byte[] data : datas) {
             if (hexEnabled) {
                 // spn.append(TextUtil.toHexString(data)).append('\n');
@@ -497,7 +502,7 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
             } else if (spn.contains("NOT FOUND") || spn.contains("ERROR") || spn.contains("TIME OUT")) {
                 UDSresponse = 2;
             } else if (spn.contains("OK")) {
-                UDSresponse = 4;
+                UDSresponse = 1;
             } else if (spn.contains("BUS INIT") || spn.contains("WAIT")) {
                 // Log.e("Response_data", String.valueOf(spn));
                 UDSresponse = 3;
@@ -810,7 +815,7 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
                     Toast.makeText(context, responseData, Toast.LENGTH_LONG).show();
 //                    receiveText.setText("Offline Data:" +responseData );
 
-                    clearDataInRealm();
+//                    clearDataInRealm();
                 } else {
 //                    Toast.makeText(context, "No data..", Toast.LENGTH_SHORT).show();
                 }
@@ -881,13 +886,13 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
 //            }
         }
 
-        public void clearDataInRealm() {
-            Realm realm = Realm.getDefaultInstance();
-            realm.beginTransaction();
-            realm.delete(MyDataModelClass.class);
-            realm.commitTransaction();
-            realm.close();
-        }
+//        public void clearDataInRealm() {
+//            Realm realm = Realm.getDefaultInstance();
+//            realm.beginTransaction();
+//            realm.delete(MyDataModelClass.class);
+//            realm.commitTransaction();
+//            realm.close();
+//        }
 
         private boolean isInternetAvailable() {
 //            ConnectivityManager connectivityManager = (ConnectivityManager) requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -1013,9 +1018,9 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
                 // GSM Signal strength
                 TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
                 int gsmSignalStrength = 0; // Signal strength in dBm
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    gsmSignalStrength = telephonyManager.getSignalStrength().getGsmSignalStrength();
-                }
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+//                    gsmSignalStrength = telephonyManager.getSignalStrength().getGsmSignalStrength();
+//                }
 
 
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMddHHmmss", Locale.getDefault());

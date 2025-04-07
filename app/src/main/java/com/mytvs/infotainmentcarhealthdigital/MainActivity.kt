@@ -80,7 +80,6 @@ import com.mytvs.infotainmentcarhealthdigital.services.BookService
 import com.mytvs.infotainmentcarhealthdigital.services.Services
 import com.mytvs.infotainmentcarhealthdigital.ui.theme.InfotainmentCarHealthDigitalTheme
 import com.mytvs.infotainmentcarhealthdigital.viewmodel.MainViewModel
-import com.nl.shared.DataInterface
 import dagger.hilt.android.AndroidEntryPoint
 import io.ably.lib.realtime.AblyRealtime
 import io.ably.lib.realtime.Channel
@@ -106,20 +105,6 @@ class MainActivity : ComponentActivity() {
     var broadcastReceiver: BroadcastReceiver? = null
     val portPortListItems = ArrayList<PortListItem>()
 
-    private val dataServiceConnection: ServiceConnection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            dataInterface = DataInterface.Stub.asInterface(service);
-            try {
-
-            } catch (ex: Exception) {
-                ex.printStackTrace();
-            }
-        }
-
-        override fun onServiceDisconnected(name: ComponentName?) {
-            dataInterface = null;
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -318,9 +303,6 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        val intent = Intent("com.mytvs.infotainmentcarhealthdigital.RECEIVE_DATA");
-        intent.setPackage("com.mytvs.infotainmentcarhealthdigital");
-        var isBound = bindService(intent, dataServiceConnection, BIND_AUTO_CREATE);
     }
 
     override fun onBackPressed() {
@@ -361,12 +343,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        if (dataInterface != null) {
-            unbindService(dataServiceConnection);
-        }
-    }
+
 
 }
 

@@ -31,6 +31,7 @@ import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.mytvs.infotainmentcarhealthdigital.MainActivity
 import com.mytvs.infotainmentcarhealthdigital.R
 import com.mytvs.infotainmentcarhealthdigital.DataFromDevice
+import com.mytvs.infotainmentcarhealthdigital.DataInterface
 import com.mytvs.infotainmentcarhealthdigital.calculatedMAF
 import com.mytvs.infotainmentcarhealthdigital.caluclatedMAFFuelMileage
 import com.mytvs.infotainmentcarhealthdigital.convertDecimalToBinaryForDtc
@@ -39,7 +40,6 @@ import com.mytvs.infotainmentcarhealthdigital.serviceKit.CustomProber
 import com.mytvs.infotainmentcarhealthdigital.serviceKit.TextUtil
 import com.mytvs.infotainmentcarhealthdigital.vehicleMAFFuelMileage
 import com.mytvs.infotainmentcarhealthdigital.view.workManager.WidgetWorkManager
-import com.nl.shared.DataInterface
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
@@ -69,10 +69,12 @@ var deviceconnected by mutableStateOf("Not Connected")
 class MyService : Service() {
 
     @get:Throws(RemoteException::class)
-    val mIBinder: DataInterface.Stub =object: DataInterface.Stub() {
-        override fun dataRequest(canData: MutableMap<String, String>?): String {
+    val mIBinder: DataInterface.Stub = object : DataInterface.Stub() {
+        override fun dataRequest(): Map<String, String> {
             Log.i("MYSERVICE", "Datarequest sending")
-            return "Sample"
+            var sampleMap = HashMap<String, String>();
+            sampleMap.put("010C", "123113131")
+            return sampleMap
         }
     }
 

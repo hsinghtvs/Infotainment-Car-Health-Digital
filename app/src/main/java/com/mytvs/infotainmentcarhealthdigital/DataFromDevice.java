@@ -4,7 +4,6 @@ import static android.content.Context.MODE_PRIVATE;
 
 import android.Manifest;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -40,6 +39,7 @@ import com.hoho.android.usbserial.driver.SerialTimeoutException;
 import com.hoho.android.usbserial.driver.UsbSerialDriver;
 import com.hoho.android.usbserial.driver.UsbSerialPort;
 import com.hoho.android.usbserial.driver.UsbSerialProber;
+import com.mytvs.infotainmentcarhealthdigital.data.DBCParam;
 import com.mytvs.infotainmentcarhealthdigital.data.MyDataModelClass;
 import com.mytvs.infotainmentcarhealthdigital.serviceKit.Constants;
 import com.mytvs.infotainmentcarhealthdigital.serviceKit.CustomProber;
@@ -47,6 +47,9 @@ import com.mytvs.infotainmentcarhealthdigital.serviceKit.SerialListener;
 import com.mytvs.infotainmentcarhealthdigital.serviceKit.SerialService;
 import com.mytvs.infotainmentcarhealthdigital.serviceKit.SerialSocket;
 import com.mytvs.infotainmentcarhealthdigital.serviceKit.TextUtil;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -56,17 +59,17 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import io.realm.Realm;
-
 
 public class DataFromDevice implements ServiceConnection, SerialListener {
     private enum Connected {False, Pending, True}
@@ -134,6 +137,9 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
     public static DataFromDevice instance;
     private Realm realm;
     ConnectivityReceiver connectivityReceiver;
+    public List<DBCParam> dbcList = new ArrayList<>();
+    private boolean dataEnded = true;
+    private StringBuilder strBuilder = new StringBuilder();
 
     public static DataFromDevice getInstance(Context ctx) {
         context = ctx;
@@ -141,6 +147,10 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
             instance = new DataFromDevice();
         }
         return instance;
+    }
+
+    public void setDBCList(List<DBCParam> dbcParamList) {
+        dbcList = dbcParamList;
     }
 
     public void StartService() {
@@ -163,7 +173,7 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
         Realm.init(context);
         realm = Realm.getDefaultInstance();
 
-        startPeriodicOperations();
+//        startPeriodicOperations();
 
 
         spn_new = new SpannableStringBuilder();
@@ -212,6 +222,26 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
 
     private void connecting() {
         connect(null);
+    }
+
+    //Check for end delimiter
+    private boolean checkForEnd(byte[] inputArray) {
+        for (byte b : inputArray) {
+            if (b == (byte) 0x03) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    //Check for start delimiter
+    private boolean checkForStart(byte[] inputArray) {
+        for (byte b : inputArray) {
+            if (b == (byte) 0x02) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void connect(Boolean permissionGranted) {
@@ -278,18 +308,23 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
     private void startPeriodicOperations() {
         hexEnabled = true;
         timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                try {
+//        timer.schedule(new TimerTask() {
+//            @Override
+//            public void run() {
+        Runnable backgroundTask = () -> {
+            try {
 //                    sendParametersWithDelay();
-                    sendCommands();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Log.e("PeriodicOperations", "Error in periodic operation: " + e.getMessage());
-                }
+                sendCommands();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e("PeriodicOperations", "Error in periodic operation: " + e.getMessage());
             }
-        }, 10, 200); // 10 seconds in milliseconds
+        };
+        Thread thread = new Thread(backgroundTask);
+        thread.start();
+
+//            }
+//        }, 10, 200); // 10 seconds in milliseconds
     }
 
     private void sendCommands() {
@@ -325,38 +360,71 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
     private void sendIntervalCommands() {
         String request = "";
         String[] parameters = {
-                "33", "42", "04", "05",
-                "0B", "0C", "0D", "0F",
-                "10", "21", "23", "2C",
-                "14", "31", "4A", "0E",
-                "03", "BAT"
+                "0C", "0D", "5B", "05", "2F"
+//                "33", "42", "04", "05",
+//                "0B", "0C", "0D", "0F",
+//                "10", "21", "23", "2C",
+//                "14", "31", "4A", "0E",
+//                "03", "BAT"
         };
         try {
-            if (request_index > 17) {
+            if (request_index > parameters.length) {
                 request_index = 0;
             }
-            if (request_index > 15) {
+            if (request_index > parameters.length - 1) {
                 request = parameters[request_index];
             } else {
                 request = "01" + parameters[request_index];
             }
-            UDSresponse = 0;
-            send(request);
-//            while (UDSresponse != 1) {
-//                Thread.sleep(500); // Delay for 10 milliseconds
-//                if (UDSresponse == 1) {
-//                    break;
-//                }
-//                Thread.sleep(500); // Delay for 10 milliseconds
-//                if (UDSresponse == 2) {
-//                    // Select Any one of Them Until Akhilesh Changes to Auto Protocol
-//                    // Klen Vehicle
-//                    send("ATTP6");
-//                    Thread.sleep(500); // Delay for 10 milliseconds
-//                    send(request);
-//                    Thread.sleep(500); // Delay for 10 milliseconds
-//                }
-//            }
+
+            JSONArray array = new JSONArray();
+            //Forming data for the request
+
+            try {
+                JSONObject outerRequestJsonObject = new JSONObject();
+                JSONObject requestJsonObject = new JSONObject();
+                JSONArray insideRequestJsonArray = new JSONArray();
+                for (int i = 0; i < parameters.length - 1; i++) {
+                    JSONObject insideRequestJsonObject = new JSONObject();
+                    insideRequestJsonObject.put("C11", "7DF");
+                    insideRequestJsonObject.put("C13", "0201" + parameters[i] + "0000000000");
+                    insideRequestJsonObject.put("C32", 200);
+                    insideRequestJsonArray.put(insideRequestJsonObject);
+                }
+                requestJsonObject.put("C31", insideRequestJsonArray);
+                outerRequestJsonObject.put("C01", requestJsonObject);
+                array.put(outerRequestJsonObject);
+                UDSresponse = 0;
+                send(outerRequestJsonObject.toString());
+            } catch (Exception ex) {
+                Log.i("INFOTAINMENT", "CAR HEALTH FORMING REQUEST JSON EXCEPTION - " + ex.toString());
+            }
+
+
+            for (int j = 0; j < array.length(); j++) {
+                try {
+                    String requestString = array.getJSONObject(j).toString();
+//                    send(requestString);
+                } catch (Exception ex) {
+                    Log.i("INFOTAINMENT", "CAR HEALTH SENDING REQUEST JSON EXCEPTION " + ex.toString());
+                }
+            }
+//            send(request);
+            while (UDSresponse != 1) {
+                Thread.sleep(500); // Delay for 10 milliseconds
+                if (UDSresponse == 1) {
+                    break;
+                }
+                Thread.sleep(500); // Delay for 10 milliseconds
+                if (UDSresponse == 2) {
+                    // Select Any one of Them Until Akhilesh Changes to Auto Protocol
+                    // Klen Vehicle
+                    send("ATTP6");
+                    Thread.sleep(500); // Delay for 10 milliseconds
+                    send(request);
+                    Thread.sleep(500); // Delay for 10 milliseconds
+                }
+            }
             request_index++;
             if (request_index == 18) {
                 request_index = 0;
@@ -386,9 +454,9 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
 //    }
 
     private void send(String str) {
-        if (connected != Connected.True) {
-            return;
-        }
+//        if (connected != Connected.True) {
+//            return;
+//        }
         try {
             String msg;
             byte[] data;
@@ -400,14 +468,17 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
                 //msg = sb.toString();
                 //data = TextUtil.fromHexString(msg);
                 reqstr = str;
-                msg = str + "\r";
+//                msg = reqstr + "\r";
+                msg = reqstr;
+//                msg = str + "\r";
                 //data = (str + newline).getBytes();
                 data = msg.getBytes(charset);
             } else {
                 //msg = sb.toString();
                 //data = TextUtil.fromHexString(msg);
                 reqstr = str;
-                msg = str + "\r";
+                msg = reqstr + "\r";
+//                msg = str + "\r";
                 //data = (str + newline).getBytes();
                 data = msg.getBytes(charset);
             }
@@ -425,15 +496,26 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
         String str = "";
         String req_res = "";
 
-
         Charset charset = StandardCharsets.UTF_8;
         for (byte[] data : datas) {
+            //Check for start/end delimiters
+            boolean startDelimiterAvailable = checkForStart(data);
+            boolean endDelimiterAvailable = checkForEnd(data);
+            if (startDelimiterAvailable) {
+                strBuilder = new StringBuilder();
+            }
+            Log.i("RESPONSE", "Check for start delimiter/end delimiter " + String.valueOf(startDelimiterAvailable) + " and " + String.valueOf(endDelimiterAvailable));
             if (hexEnabled) {
                 // spn.append(TextUtil.toHexString(data)).append('\n');
-
-                str = new String(data, charset);
-
-
+                byte[] newArray = new byte[data.length];
+                int newIndex = 0;
+                for (byte dt : data) {
+                    if (dt != (byte) 0x02 && dt != (byte) 0x03) {
+                        newArray[newIndex++] = dt;
+                    }
+                }
+                str = new String(newArray, charset);
+                strBuilder.append(str);
             } else {
 //                    String msg = new String(data);
 //                    int msgLength = msg.length();
@@ -458,15 +540,14 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
 //                        // spn.append(TextUtil.toCaretString(msg, newline.length() != 0));
 //                    }
             }
-        }
-        SimpleDateFormat dateFormat = new SimpleDateFormat("YYMMDDHHMMSS");
-        Date currentDate = new Date();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("YYMMDDHHMMSS");
+            Date currentDate = new Date();
 
-        String dateTime = dateFormat.format(currentDate);
+            String dateTime = dateFormat.format(currentDate);
 //        long unixTime = convertToUnixTime(dateTime);
 
-        Log.d("Formatted Date Time: ", dateTime);
-        Log.d("Unix Time: ", String.valueOf(dateTime));
+            Log.d("Formatted Date Time: ", dateTime);
+            Log.d("Unix Time: ", String.valueOf(dateTime));
 
            /* SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMddHHmmss", Locale.getDefault());
             String dateTime = dateFormat.format(new Date());*/
@@ -479,100 +560,125 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
             }
             String unixTime =String.valueOf(epoch);*/
 
-        spn = spn + str;
-        if (str.contains("\r")) {
+            if (endDelimiterAvailable) {
+                spn = spn + strBuilder.toString();
+                if (!spn.isEmpty()) {
+                    receive_complete = 1;
+                    Intent i = new Intent("USBData");
+                    try {
+                        JSONObject jsonObject = new JSONObject(spn);
+                        if (jsonObject.has("F01")) {
+                            JSONObject f01Object = jsonObject.getJSONObject("F01");
+                            if (f01Object.has("C01")) {
+                                JSONArray jsonArray = f01Object.getJSONArray("C01");
+                                for (int k = 0; k < jsonArray.length(); k++) {
+                                    JSONObject responseObject = jsonArray.getJSONObject(k);
+                                    for (DBCParam dbcParam : dbcList) {
+                                        if (responseObject.has("C13")) {
+                                            if (dbcParam.getName().contains(responseObject.getString("C13").substring(4, 5))) {
+                                                parseData(responseObject.getString("C13"), dbcParam);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    Toast.makeText(context, responseObject.getString("C13"), Toast.LENGTH_LONG).show();
+                                }
+                            }
+                        }
+                    } catch (Exception ex) {
+                        Log.e("CAR-HEALTH", "Parsing exception from the JSON object " + ex.toString());
+                    }
+                    i.putExtra("Response_data", spn);
+                    LocalBroadcastManager.getInstance(context).sendBroadcast(i);
+                }
 
-            receive_complete = 1;
-            Log.e("Response_data", String.valueOf(spn));
-            Intent i = new Intent("USBData");
-            i.putExtra("Response_data", str);
-            LocalBroadcastManager.getInstance(context).sendBroadcast(i);
-        }
 
-
-        //spn_new.append(spn);
-        //count++;
-        // Log.e("count", String.valueOf(count));
-        // Log.e("Response_spn_logs", String.valueOf(spn_new));
+                //spn_new.append(spn);
+                //count++;
+                // Log.e("count", String.valueOf(count));
+                // Log.e("Response_spn_logs", String.valueOf(spn_new));
 //        Toast.makeText(context, "reqstr : " + reqstr + "," + "spn" + spn, Toast.LENGTH_SHORT).show();
-        if (receive_complete == 1) {
-            receive_complete = 0;
-            if (spn.contains("NO DATA") || spn.contains("SUCCESS")) {
-                UDSresponse = 1;
-            } else if (spn.contains("NOT FOUND") || spn.contains("ERROR") || spn.contains("TIME OUT")) {
-                UDSresponse = 2;
-            } else if (spn.contains("OK")) {
-                UDSresponse = 1;
-            } else if (spn.contains("BUS INIT") || spn.contains("WAIT")) {
-                // Log.e("Response_data", String.valueOf(spn));
-                UDSresponse = 3;
-                //sendCommands();
-            } else if (reqstr.contains("BAT")) {
-                data_new = "0341BB" + spn + "00000000";
-                Toast.makeText(context, "data_new " + data_new, Toast.LENGTH_SHORT).show();
-                Intent i = new Intent("USBData");
-                i.putExtra("Response_data", data_new);
-                LocalBroadcastManager.getInstance(context).sendBroadcast(i);
-                UDSresponse = 1;
-            } else {
-                // Log.e("Response_data", String.valueOf(spn));
-                if (spn.contains("41") || spn.contains("7F") || spn.contains("43") || spn.contains("47")) {
-                    UDSresponse = 1;
-                    spn = spn.substring(0, spn.length() - 1);
-                    spn = spn.replaceAll(">", "");
-                    spn = spn.replaceAll("\\s+", "");
-                    if (spn.length() < 16) {
-                        while (spn.length() < 16) {
-                            spn = spn + "0";
-                        }
-                        // spn= spn.padEnd(16-spn.length(),"0");
-                    }
-                    String gpsValid = "V";
-                    if (lat != 0) {
-                        gpsValid = "A";
-                    } else {
-                        gpsValid = "V";
-                    }
-
-                    if ((request_index == 0)) {
-                        // first_service = 0;
-                        data_new = "";   //clear the string
-                        String Package_Header = "$$CLIENT_1NS,862843041050881,1," + lat + "," + lon + "," + dateTime + "," + gpsValid + gnssFixStatusSt + "," + gsmSignalStrengthSt + "," + speedSt + ",583,3," + satellite + "," + hdopSt + ",0,0,12181,2050,12181,3960,0,0,0,10023,21,";
-
-                        if (!reqstr.equals("0103")) {
-                            req_res = "|" + reqstr + ":" + spn;
-                            data_new = Package_Header + req_res;
-                        } else {
-                            data_new = Package_Header;
-                        }
-                    } else {
-                        req_res = "|" + reqstr + ":" + spn;
-                        data_new = data_new + req_res;
-                    }
-
-                    if ((request_index == 16)) {
-
-                        data_new = data_new + "|*66";
-
-                        Log.e("Response__data_length", String.valueOf(spn_new.length()));
-
-                        usbData = data_new;
-                        sendMessageToServer(serverAddress, serverPort, data_new);
-
+                if (receive_complete == 1) {
+                    receive_complete = 0;
+                    if (spn.contains("NO DATA") || spn.contains("SUCCESS")) {
+                        UDSresponse = 1;
+                    } else if (spn.contains("NOT FOUND") || spn.contains("ERROR") || spn.contains("TIME OUT")) {
+                        UDSresponse = 2;
+                    } else if (spn.contains("OK")) {
+                        UDSresponse = 1;
+                    } else if (spn.contains("BUS INIT") || spn.contains("WAIT")) {
+                        // Log.e("Response_data", String.valueOf(spn));
+                        UDSresponse = 3;
+                        //sendCommands();
+                    } else if (reqstr.contains("BAT")) {
+                        data_new = "0341BB" + strBuilder.toString() + "00000000";
+                        Toast.makeText(context, "data_new " + data_new, Toast.LENGTH_SHORT).show();
                         Intent i = new Intent("USBData");
-                        i.putExtra("data_new", data_new);
+                        i.putExtra("Response_data", data_new);
                         LocalBroadcastManager.getInstance(context).sendBroadcast(i);
-                        Log.e("Response_data", String.valueOf(data_new));
-                        //receiveText.setText(spn_new);
+                        UDSresponse = 1;
+                    } else {
+                        // Log.e("Response_data", String.valueOf(spn));
+                        if (spn.contains("41") || spn.contains("7F") || spn.contains("43") || spn.contains("47")) {
+                            UDSresponse = 1;
+                            spn = spn.substring(0, spn.length() - 1);
+                            spn = spn.replaceAll(">", "");
+                            spn = spn.replaceAll("\\s+", "");
+                            if (spn.length() < 16) {
+                                while (spn.length() < 16) {
+                                    spn = spn + "0";
+                                }
+                                // spn= spn.padEnd(16-spn.length(),"0");
+                            }
+//                            Toast.makeText(context, "data_response " + strBuilder.toString(), Toast.LENGTH_SHORT).show();
+                            String gpsValid = "V";
+                            if (lat != 0) {
+                                gpsValid = "A";
+                            } else {
+                                gpsValid = "V";
+                            }
 
-                        //responses.clear();
-                        spn_new.clear();
+                            if ((request_index == 0)) {
+                                // first_service = 0;
+                                data_new = "";   //clear the string
+                                String Package_Header = "$$CLIENT_1NS,862843041050881,1," + lat + "," + lon + "," + dateTime + "," + gpsValid + gnssFixStatusSt + "," + gsmSignalStrengthSt + "," + speedSt + ",583,3," + satellite + "," + hdopSt + ",0,0,12181,2050,12181,3960,0,0,0,10023,21,";
+
+                                if (!reqstr.equals("0103")) {
+                                    req_res = "|" + reqstr + ":" + spn;
+                                    data_new = Package_Header + req_res;
+                                } else {
+                                    data_new = Package_Header;
+                                }
+                            } else {
+                                req_res = "|" + reqstr + ":" + spn;
+                                data_new = data_new + req_res;
+                            }
+
+                            if ((request_index == 16)) {
+
+                                data_new = data_new + "|*66";
+
+                                Log.e("Response__data_length", String.valueOf(spn_new.length()));
+
+                                usbData = data_new;
+                                sendMessageToServer(serverAddress, serverPort, data_new);
+
+                                Intent i = new Intent("USBData");
+                                i.putExtra("data_new", data_new);
+                                LocalBroadcastManager.getInstance(context).sendBroadcast(i);
+                                Log.e("Response_data", String.valueOf(data_new));
+                                //receiveText.setText(spn_new);
+
+                                //responses.clear();
+                                spn_new.clear();
 
 
+                            }
+                        }
                     }
+                    spn = "";
                 }
             }
-            spn = "";
         }
     }
 
@@ -586,6 +692,64 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
             e.printStackTrace();
             return -1;
         }
+    }
+
+    private byte[] hexStringToByteArray(String hex) {
+        byte[] result = new byte[hex.length() / 2];
+        for (int i = 0; i < hex.length(); i += 2) {
+            result[i / 2] = (byte) Integer.parseInt(hex.substring(i, i + 2), 16);
+        }
+        return result;
+    }
+
+    private byte[] padTo8Bytes(byte[] originalArray) {
+        if (originalArray.length >= 8) return originalArray;
+
+        byte[] modifiedArray = Arrays.copyOf(originalArray, 8);
+//        System.arraycopy(originalArray, 0, modifiedArray, 0, 8);
+        return modifiedArray;
+    }
+
+    private Long extractBits(byte[] canData, int startBit, int bitlength, boolean isLittleEndian) {
+        byte[] data = padTo8Bytes(canData);
+        int startIndex = startBit / 8;
+        int startBitIndex = startBit % 8;
+        int endIndex = (startBit + bitlength - 1) / 8;
+        Long result = 0L;
+
+        if (isLittleEndian) {
+            // Little-endian byte order
+            for (int i = endIndex; i >= startIndex; i--) {
+                long b = data[i] & 0xFFL;
+                int shift = (i == endIndex) ? startBitIndex : 0;
+                result = (result << 8) | (b >>> shift);
+            }
+        } else {
+            // Big-endian byte order
+            for (int i = startIndex; i <= endIndex; i++) {
+                long b = data[i] & 0xFFL;
+                int shift = (i == startIndex) ? startBitIndex : 0;
+                result = (result << 8) | (b >>> shift);
+            }
+        }
+        return result;
+    }
+
+    public String parseData(String data, DBCParam dbcParam) {
+        byte[] canDataByte = hexStringToByteArray(data);
+
+        Long extractedData = extractBits(canDataByte, dbcParam.getStartBit(), dbcParam.getBitLength(), dbcParam.isLittleEndian());
+
+        if (dbcParam.isSigned() && extractedData != 0 & (1L << (dbcParam.getBitLength() - 1)) != 0) {
+            extractedData -= (1L << dbcParam.getBitLength());
+        }
+
+        // Apply factor and offset
+        float scaledData = extractedData * dbcParam.getFactor() + dbcParam.getOffset();
+
+        String result = String.valueOf(scaledData);
+        Log.d("PARSED RESULT", "Parsed result in scaled data " + result);
+        return result;
     }
 
 
@@ -657,9 +821,9 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
     public void onSerialConnect() {
         status("connected");
         connected = Connected.True;
-        if (controlLinesEnabled)
+//        if (controlLinesEnabled)
 //            controlLines.start();
-            startPeriodicOperations();
+        startPeriodicOperations();
     }
 
     @Override

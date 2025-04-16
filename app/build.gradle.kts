@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.dagger.hilt.android")
     id("kotlin-kapt")
+    id("kotlin-parcelize")
 }
 
 apply(plugin = "kotlin-kapt")
@@ -112,5 +113,7 @@ dependencies {
     implementation("com.google.accompanist:accompanist-permissions:0.25.0")
 
     implementation("io.ably:ably-android:1.2.40")
+
+    implementation("com.google.code.gson:gson:2.9.0")
 
 }

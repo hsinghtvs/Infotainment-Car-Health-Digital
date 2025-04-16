@@ -61,6 +61,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.hoho.android.usbserial.driver.UsbSerialDriver
 import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.mytvs.infotainmentcarhealthdigital.carHealth.VehicleHealthScreen
+import com.mytvs.infotainmentcarhealthdigital.data.DBCParam
 import com.mytvs.infotainmentcarhealthdigital.data.receivers.DTCCode
 import com.mytvs.infotainmentcarhealthdigital.data.receivers.DTCCodeError
 import com.mytvs.infotainmentcarhealthdigital.data.receivers.DTCCodeErrorsList
@@ -86,6 +87,10 @@ import io.ably.lib.realtime.Channel
 import io.ably.lib.realtime.ConnectionState
 import io.ably.lib.realtime.ConnectionStateListener
 import io.ably.lib.types.Message
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.InputStreamReader
 
 var calculatedMAF by mutableStateOf(0.0) // Not Required Only to Test
 
@@ -278,7 +283,7 @@ class MainActivity : ComponentActivity() {
                             myEdit.putInt("baud", 500)
                             myEdit.apply()
 
-                            val deviceData: DataFromDevice = DataFromDevice.getInstance(context)
+                            val dataDevice: DataFromDevice = DataFromDevice.getInstance(context)
                             broadcastReceiver = object : BroadcastReceiver() {
                                 override fun onReceive(
                                     context: Context,
@@ -289,12 +294,13 @@ class MainActivity : ComponentActivity() {
                                             UsbManager.EXTRA_PERMISSION_GRANTED,
                                             false
                                         )
-                                        deviceData.connect(granted)
-                                        deviceData.StartService()
+                                        dataDevice.connect(granted)
+                                        dataDevice.StartService()
                                     }
                                 }
                             }
-                            deviceData.StartService()
+                            dataDevice.StartService()
+                            parseDBCFile(dataDevice);
                         }
                         LocalBroadcastManager.getInstance(DataFromDevice.context)
                             .registerReceiver(mRecover, IntentFilter("USBData"))
@@ -302,7 +308,49 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
 
+    fun parseDBCFile(dataFromDevice: DataFromDevice) {
+        val stringBuilder = StringBuilder()
+        try {
+            val dbcFile = baseContext.assets.open("obd2.json");
+            val inputStreamReader = InputStreamReader(dbcFile);
+            val bufferedReader = BufferedReader(inputStreamReader);
+            var line: String? = bufferedReader.readLine();
+            while (line != null) {
+                stringBuilder.append(line)
+                line = bufferedReader.readLine()
+            }
+            bufferedReader.close()
+            inputStreamReader.close()
+            dbcFile.close()
+        } catch (ex: Exception) {
+            Log.d("CONNECTION", "Reading DBC file ${ex.printStackTrace()}")
+        }
+        val jsonObject: JSONObject = JSONObject(stringBuilder.toString());
+        val paramJSONArray: JSONArray = jsonObject.getJSONArray("params");
+        val prmJSONObject: JSONObject = paramJSONArray.getJSONObject(0);
+        val signalsArray: JSONArray = prmJSONObject.getJSONArray("signals");
+        val signalParseDBCList = mutableListOf<DBCParam>();
+        for (i in 0 until signalsArray.length()) {
+            val signalObject = signalsArray.getJSONObject(i);
+            val dbcParam = DBCParam(
+                signalObject.getString("name"),
+                signalObject.getString("label"),
+                signalObject.getString("name"),
+                signalObject.getString("label"),
+                signalObject.getInt("startBit"),
+                signalObject.getInt("bitLength"),
+                signalObject.getBoolean("isLittleEndian"),
+                signalObject.getBoolean("isSigned"),
+                signalObject.getDouble("factor").toFloat(),
+                signalObject.getDouble("offset").toFloat(),
+                signalObject.getString("dataType")
+            );
+            signalParseDBCList.add(dbcParam);
+        }
+        Log.d("CONNECTION", "Converted JSON Object ${signalParseDBCList.toString()}");
+        dataFromDevice.setDBCList(signalParseDBCList);
     }
 
     override fun onBackPressed() {
@@ -342,7 +390,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
 
 
 }

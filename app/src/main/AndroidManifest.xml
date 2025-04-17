@@ -18,6 +18,10 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
 
+    <uses-permission
+        android:name="com.nlevcluster.nl_logger.provider.permission.MANAGE_LOGS"
+        android:protectionLevel="signature" />
+
     <!--Aidl permissions self defined-->
     <permission android:name="com.mytvs.infotainmentcarhealthdigital.permission.ACCESS_DATA_SERVICE" />
 
@@ -137,8 +141,8 @@
             android:exported="true"
             android:foregroundServiceType="location"
             android:label="My Service"
-            android:stopWithTask="false"
-            android:permission="com.mytvs.infotainmentcarhealthdigital.permission.ACCESS_DATA_SERVICE">
+            android:permission="com.mytvs.infotainmentcarhealthdigital.permission.ACCESS_DATA_SERVICE"
+            android:stopWithTask="false">
             <intent-filter>
                 <action android:name="com.mytvs.infotainmentcarhealthdigital" />
             </intent-filter>

@@ -6,6 +6,7 @@ import android.Manifest;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -30,6 +31,7 @@ import android.text.SpannableStringBuilder;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -49,6 +51,7 @@ import com.mytvs.infotainmentcarhealthdigital.serviceKit.SerialSocket;
 import com.mytvs.infotainmentcarhealthdigital.serviceKit.TextUtil;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -65,7 +68,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -377,39 +379,15 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
                 request = "01" + parameters[request_index];
             }
 
-            JSONArray array = new JSONArray();
             //Forming data for the request
-
             try {
-                JSONObject outerRequestJsonObject = new JSONObject();
-                JSONObject requestJsonObject = new JSONObject();
-                JSONArray insideRequestJsonArray = new JSONArray();
-                for (int i = 0; i < parameters.length - 1; i++) {
-                    JSONObject insideRequestJsonObject = new JSONObject();
-                    insideRequestJsonObject.put("C11", "7DF");
-                    insideRequestJsonObject.put("C13", "0201" + parameters[i] + "0000000000");
-                    insideRequestJsonObject.put("C32", 200);
-                    insideRequestJsonArray.put(insideRequestJsonObject);
-                }
-                requestJsonObject.put("C31", insideRequestJsonArray);
-                outerRequestJsonObject.put("C01", requestJsonObject);
-                array.put(outerRequestJsonObject);
+                JSONObject outerRequestJsonObject = getOuterRequestJsonObject(parameters);
                 UDSresponse = 0;
                 send(outerRequestJsonObject.toString());
             } catch (Exception ex) {
                 Log.i("INFOTAINMENT", "CAR HEALTH FORMING REQUEST JSON EXCEPTION - " + ex.toString());
             }
 
-
-            for (int j = 0; j < array.length(); j++) {
-                try {
-                    String requestString = array.getJSONObject(j).toString();
-//                    send(requestString);
-                } catch (Exception ex) {
-                    Log.i("INFOTAINMENT", "CAR HEALTH SENDING REQUEST JSON EXCEPTION " + ex.toString());
-                }
-            }
-//            send(request);
             while (UDSresponse != 1) {
                 Thread.sleep(500); // Delay for 10 milliseconds
                 if (UDSresponse == 1) {
@@ -433,6 +411,25 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    @NonNull
+    private static JSONObject getOuterRequestJsonObject(String[] parameters) throws JSONException {
+        JSONObject outerRequestJsonObject = new JSONObject();
+        JSONObject requestJsonObject = new JSONObject();
+        JSONArray insideRequestJsonArray = new JSONArray();
+        for (int i = 0; i < parameters.length - 1; i++) {
+            JSONObject insideRequestJsonObject = new JSONObject();
+            insideRequestJsonObject.put("C11", "7DF");
+            insideRequestJsonObject.put("C13", "0201"
+                    + parameters[i] +
+                    "0000000000");
+            insideRequestJsonObject.put("C32", 200);
+            insideRequestJsonArray.put(insideRequestJsonObject);
+        }
+        requestJsonObject.put("C31", insideRequestJsonArray);
+        outerRequestJsonObject.put("C01", requestJsonObject);
+        return outerRequestJsonObject;
     }
 
 
@@ -504,7 +501,6 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
             if (startDelimiterAvailable) {
                 strBuilder = new StringBuilder();
             }
-            Log.i("RESPONSE", "Check for start delimiter/end delimiter " + String.valueOf(startDelimiterAvailable) + " and " + String.valueOf(endDelimiterAvailable));
             if (hexEnabled) {
                 // spn.append(TextUtil.toHexString(data)).append('\n');
                 byte[] newArray = new byte[data.length];
@@ -575,13 +571,13 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
                                     JSONObject responseObject = jsonArray.getJSONObject(k);
                                     for (DBCParam dbcParam : dbcList) {
                                         if (responseObject.has("C13")) {
-                                            if (dbcParam.getName().contains(responseObject.getString("C13").substring(4, 5))) {
-                                                parseData(responseObject.getString("C13"), dbcParam);
+                                            if (dbcParam.getName().contains("_" + responseObject.getString("C13").substring(4, 6) + "_")) {
+                                                String value = parseData(responseObject.getString("C13"), dbcParam);
+                                                Toast.makeText(context, "Parsed data - " + dbcParam.getName() + " - " + responseObject.getString("C13") + " - " + value, Toast.LENGTH_LONG).show();
                                                 break;
                                             }
                                         }
                                     }
-                                    Toast.makeText(context, responseObject.getString("C13"), Toast.LENGTH_LONG).show();
                                 }
                             }
                         }
@@ -661,7 +657,7 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
                                 Log.e("Response__data_length", String.valueOf(spn_new.length()));
 
                                 usbData = data_new;
-                                sendMessageToServer(serverAddress, serverPort, data_new);
+//                                sendMessageToServer(serverAddress, serverPort, data_new);
 
                                 Intent i = new Intent("USBData");
                                 i.putExtra("data_new", data_new);
@@ -704,13 +700,11 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
 
     private byte[] padTo8Bytes(byte[] originalArray) {
         if (originalArray.length >= 8) return originalArray;
-
-        byte[] modifiedArray = Arrays.copyOf(originalArray, 8);
-//        System.arraycopy(originalArray, 0, modifiedArray, 0, 8);
-        return modifiedArray;
+        return Arrays.copyOf(originalArray, 8);
     }
 
-    private Long extractBits(byte[] canData, int startBit, int bitlength, boolean isLittleEndian) {
+    private Long extractBits(byte[] canData, int startBit, int bitlength,
+                             boolean isLittleEndian) {
         byte[] data = padTo8Bytes(canData);
         int startIndex = startBit / 8;
         int startBitIndex = startBit % 8;
@@ -737,18 +731,13 @@ public class DataFromDevice implements ServiceConnection, SerialListener {
 
     public String parseData(String data, DBCParam dbcParam) {
         byte[] canDataByte = hexStringToByteArray(data);
-
         Long extractedData = extractBits(canDataByte, dbcParam.getStartBit(), dbcParam.getBitLength(), dbcParam.isLittleEndian());
-
         if (dbcParam.isSigned() && extractedData != 0 & (1L << (dbcParam.getBitLength() - 1)) != 0) {
             extractedData -= (1L << dbcParam.getBitLength());
         }
-
         // Apply factor and offset
         float scaledData = extractedData * dbcParam.getFactor() + dbcParam.getOffset();
-
         String result = String.valueOf(scaledData);
-        Log.d("PARSED RESULT", "Parsed result in scaled data " + result);
         return result;
     }
 
